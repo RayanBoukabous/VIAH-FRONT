@@ -1,0 +1,113 @@
+{
+    "hero": {
+        "title": "VIAH – India's AI Learning Platform",
+        "subtitle": "Boost Your Brain, Learn Smarter",
+        "description": "VIAH is an e-learning platform that brings together all courses from the Indian national curriculum. Experience personalized, engaging, and interactive learning powered by AI.",
+        "cta": "Start Learning Now",
+        "ctaSecondary": "Explore Courses"
+    },
+    "features": {
+        "title": "Why Choose VIAH?",
+        "subtitle": "Experience the future of learning",
+        "items": {
+            "curriculum": {
+                "title": "Complete Curriculum",
+                "description": "All courses from the Indian national curriculum in one place"
+            },
+            "videos": {
+                "title": "Animated Videos",
+                "description": "Engaging avatar-animated videos that make learning fun"
+            },
+            "quizzes": {
+                "title": "Interactive Quizzes",
+                "description": "Test your knowledge with interactive quizzes"
+            },
+            "chatbot": {
+                "title": "AI Assistant",
+                "description": "Get instant help from our intelligent chatbot"
+            },
+            "dashboard": {
+                "title": "Smart Dashboard",
+                "description": "Track and improve your performance with intelligent analytics"
+            },
+            "personalized": {
+                "title": "Personalized Learning",
+                "description": "AI-powered personalized learning paths tailored to you"
+            }
+        }
+    },
+    "taglines": {
+        "primary": "VIAH – India's AI Learning Platform",
+        "secondary": "Boost Your Brain, Learn Smarter",
+        "tertiary": "Up Your Mind, Up Your Skills",
+        "quaternary": "Elevate Your Mind, Learn Smarter"
+    },
+    "nav": {
+        "home": "Home",
+        "courses": "Courses",
+        "about": "About",
+        "contact": "Contact",
+        "login": "Login"
+    },
+    "login": {
+        "title": "Welcome Back",
+        "subtitle": "Sign in to continue your learning journey",
+        "email": "Email",
+        "password": "Password",
+        "remember": "Remember me",
+        "forgot": "Forgot password?",
+        "signIn": "Sign In",
+        "signUp": "Create Account",
+        "continueWith": "Continue with",
+        "noAccount": "Don't have an account?",
+        "haveAccount": "Already have an account?"
+    },
+    "dashboard": {
+        "sidebar": {
+            "dashboard": "Dashboard",
+            "trimesters": "My Trimesters",
+            "courses": "My Courses",
+            "modules": "My Modules",
+            "progress": "Progress",
+            "settings": "Settings"
+        },
+        "profile": "Profile",
+        "logout": "Logout"
+    },
+    "profile": {
+        "title": "My Profile",
+        "personalInfo": "Personal Information",
+        "academicInfo": "Academic Information",
+        "statistics": "Statistics",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "phone": "Phone",
+        "dateOfBirth": "Date of Birth",
+        "address": "Address",
+        "studyYear": "Study Year",
+        "specialty": "Specialty",
+        "studentId": "Student ID",
+        "enrollmentDate": "Enrollment Date",
+        "totalCourses": "Total Courses",
+        "completedCourses": "Completed Courses",
+        "totalLessons": "Total Lessons",
+        "completedLessons": "Completed Lessons",
+        "studyTime": "Total Study Time",
+        "averageScore": "Average Score",
+        "editProfile": "Edit Profile",
+        "saveChanges": "Save Changes",
+        "cancel": "Cancel"
+    },
+    "footer": {
+        "description": "VIAH - Transforming education through AI-powered learning",
+        "links": {
+            "about": "About Us",
+            "courses": "Courses",
+            "contact": "Contact",
+            "privacy": "Privacy Policy",
+            "terms": "Terms of Service"
+        },
+        "copyright": "© 2024 VIAH. All rights reserved."
+    }
+}
