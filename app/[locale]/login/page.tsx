@@ -5,20 +5,40 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ApiError, getGoogleAuthUrl, login } from '@/lib/api';
 
 export default function LoginPage() {
   const t = useTranslations('login');
   const locale = useLocale();
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login:', { email, password, rememberMe });
+    setError(null);
+    setSubmitting(true);
+    try {
+      await login({ username, password });
+      router.push(`/${locale}/dashboard`);
+      router.refresh();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setError(t('error'));
+      } else {
+        setError(t('error'));
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogle = () => {
+    window.location.assign(getGoogleAuthUrl());
   };
 
   return (
@@ -148,10 +168,18 @@ export default function LoginPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Email Input */}
+                {error && (
+                  <div
+                    role="alert"
+                    className="rounded-xl border border-red-200 dark:border-red-400/40 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300"
+                  >
+                    {error}
+                  </div>
+                )}
+                {/* Username (API: local login uses username + password) */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    {t('email')}
+                  <label htmlFor="username" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    {t('usernameOrEmail')}
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -160,12 +188,13 @@ export default function LoginPage() {
                       </svg>
                     </div>
                     <input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      id="username"
+                      type="text"
+                      autoComplete="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       className="block w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                      placeholder="you@example.com"
+                      placeholder="admin"
                       required
                     />
                   </div>
@@ -235,9 +264,10 @@ export default function LoginPage() {
                 {/* Sign In Button */}
                 <button
                   type="submit"
-                  className="w-full py-4 px-4 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl font-heading font-bold text-lg hover:shadow-xl hover:shadow-primary/50 transform hover:scale-[1.02] transition-all duration-300"
+                  disabled={submitting}
+                  className="w-full py-4 px-4 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl font-heading font-bold text-lg hover:shadow-xl hover:shadow-primary/50 transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  {t('signIn')}
+                  {submitting ? '…' : t('signIn')}
                 </button>
 
                 {/* Divider */}
@@ -252,9 +282,10 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Google Sign In */}
+                {/* Google Sign In — GET /api/v1/auth/google on the API host */}
                 <button
                   type="button"
+                  onClick={handleGoogle}
                   className="w-full py-3 px-4 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:border-primary dark:hover:border-primary-light hover:shadow-md transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-3"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">

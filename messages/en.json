@@ -53,7 +53,9 @@
         "title": "Welcome Back",
         "subtitle": "Sign in to continue your learning journey",
         "email": "Email",
+        "usernameOrEmail": "Username or email",
         "password": "Password",
+        "error": "Sign in failed. Check your credentials.",
         "remember": "Remember me",
         "forgot": "Forgot password?",
         "signIn": "Sign In",
@@ -61,6 +63,26 @@
         "continueWith": "Continue with",
         "noAccount": "Don't have an account?",
         "haveAccount": "Already have an account?"
+    },
+    "signup": {
+        "title": "Create your account",
+        "subtitle": "Register as a student to start learning",
+        "email": "Email",
+        "username": "Username",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "password": "Password",
+        "age": "Age",
+        "level": "Level",
+        "speciality": "Speciality",
+        "selectLevel": "Select a level",
+        "selectSpeciality": "Select a speciality",
+        "loadingOptions": "Loading…",
+        "catalogError": "Could not load options. Please refresh or try again later.",
+        "submit": "Create account",
+        "error": "Registration failed",
+        "conflict": "Email or username is already in use",
+        "backToLogin": "Back to sign in"
     },
     "dashboard": {
         "sidebar": {

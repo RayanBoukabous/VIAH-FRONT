@@ -1,0 +1,12 @@
+services:
+  front:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: viah-front
+    container_name: viah-front
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped

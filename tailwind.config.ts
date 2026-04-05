@@ -17,8 +17,8 @@ const config: Config = {
                 },
             },
             fontFamily: {
-                sans: ['Inter', 'sans-serif'],
-                heading: ['Montserrat', 'sans-serif'],
+                sans: ['var(--font-inter)', 'Inter', 'sans-serif'],
+                heading: ['var(--font-inter)', 'Inter', 'sans-serif'],
             },
         },
     },

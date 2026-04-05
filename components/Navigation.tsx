@@ -37,7 +37,7 @@ export default function Navigation() {
     }`}>
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          {/* Logo Section */}
+          {/* Logo Section - larger for premium presence */}
           <Link href={`/${locale}`} className="flex items-center space-x-3 group">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary-dark rounded-xl blur-lg opacity-0 group-hover:opacity-30 dark:group-hover:opacity-20 transition-opacity duration-300"></div>
@@ -45,9 +45,9 @@ export default function Navigation() {
                 <Image
                   src="/assets/logo/logo_viah.png"
                   alt="VIAH Logo"
-                  width={140}
-                  height={50}
-                  className="h-10 w-auto dark:brightness-110 group-hover:scale-105 transition-transform duration-300"
+                  width={180}
+                  height={64}
+                  className="h-14 w-auto dark:brightness-110 group-hover:scale-[1.02] transition-transform duration-300"
                   priority
                 />
               </div>
@@ -80,22 +80,26 @@ export default function Navigation() {
             })}
           </div>
 
-          {/* Right Side Actions */}
-          <div className="hidden lg:flex items-center gap-4">
-            <LanguageDropdown />
-            <ThemeToggle />
+          {/* Right Side Actions - premium order: settings group then primary CTA */}
+          <div className="hidden lg:flex items-center gap-2">
+            <div className="flex items-center gap-1.5 mr-2 py-1.5 pl-2 pr-1.5 rounded-xl bg-white/10 dark:bg-black/20 border border-white/10 dark:border-white/5">
+              <LanguageDropdown />
+              <ThemeToggle />
+            </div>
             <Link
               href={`/${locale}/login`}
-              className="px-8 py-2.5 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md text-primary dark:text-primary-light rounded-lg font-semibold text-sm hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg hover:shadow-primary/30 transform hover:scale-105 transition-all duration-300 border border-white/20 dark:border-gray-700/50"
+              className="px-6 py-3 bg-white text-primary dark:bg-white dark:text-primary-dark rounded-xl font-semibold text-base hover:bg-gray-50 dark:hover:bg-gray-100 hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] transition-all duration-200 border border-white/50 dark:border-gray-600/50 min-h-[44px] inline-flex items-center justify-center"
             >
               {t('login')}
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center gap-3">
-            <LanguageDropdown />
-            <ThemeToggle />
+          {/* Mobile: same premium group + menu */}
+          <div className="lg:hidden flex items-center gap-2">
+            <div className="flex items-center gap-1 rounded-xl bg-white/10 dark:bg-black/20 border border-white/10 py-1.5 px-2">
+              <LanguageDropdown />
+              <ThemeToggle />
+            </div>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light transition-colors relative z-50"
@@ -141,7 +145,7 @@ export default function Navigation() {
             })}
             <Link
               href={`/${locale}/login`}
-              className="block mt-4 px-4 py-3 rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-md text-primary dark:text-primary-light font-semibold text-center hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 border border-white/20 dark:border-gray-700/50"
+              className="block mt-4 px-4 py-3.5 rounded-xl bg-white text-primary dark:bg-white dark:text-primary-dark font-semibold text-center hover:bg-gray-50 dark:hover:bg-gray-100 transition-all duration-200 border border-white/30"
               onClick={() => setIsMenuOpen(false)}
             >
               {t('login')}

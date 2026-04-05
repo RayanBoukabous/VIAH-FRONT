@@ -13,20 +13,20 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="w-12 h-6 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+      <div className="w-11 h-6 rounded-full bg-gray-200 dark:bg-gray-600"></div>
     );
   }
 
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="relative w-12 h-6 rounded-full bg-gray-200 dark:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+      className="relative w-11 h-6 rounded-full bg-white/80 dark:bg-gray-700 border border-white/30 dark:border-gray-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shrink-0"
       aria-label="Toggle theme"
     >
       <div
-        className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white dark:bg-gray-900 transition-transform duration-300 transform ${
-          theme === 'dark' ? 'translate-x-6' : 'translate-x-0'
-        } shadow-lg`}
+        className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white dark:bg-gray-900 shadow-md flex items-center justify-center transition-transform duration-200 transform ${
+          theme === 'dark' ? 'translate-x-5' : 'translate-x-0'
+        }`}
       >
         {theme === 'dark' ? (
           <svg

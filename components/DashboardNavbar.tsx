@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ThemeToggle from './ThemeToggle';
 import LanguageDropdown from './LanguageDropdown';
+import { getMe, logout, type AuthUser } from '@/lib/api';
 
 export default function DashboardNavbar() {
   const locale = useLocale();
@@ -12,6 +13,7 @@ export default function DashboardNavbar() {
   const [notifications] = useState(3);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -26,16 +28,42 @@ export default function DashboardNavbar() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const me = await getMe();
+        if (!cancelled) setUser(me);
+      } catch {
+        if (!cancelled) setUser(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleProfileClick = () => {
     router.push(`/${locale}/dashboard/profile`);
     setIsProfileDropdownOpen(false);
   };
 
-  const handleLogout = () => {
-    // TODO: Implement logout logic
-    router.push(`/${locale}/login`);
+  const handleLogout = async () => {
     setIsProfileDropdownOpen(false);
+    try {
+      await logout();
+    } catch {
+      /* still navigate away */
+    }
+    setUser(null);
+    router.push(`/${locale}/login`);
+    router.refresh();
   };
+
+  const initials =
+    user?.firstName && user?.lastName
+      ? `${user.firstName[0] ?? ''}${user.lastName[0] ?? ''}`.toUpperCase()
+      : user?.username?.slice(0, 2).toUpperCase() ?? '—';
 
   return (
     <nav className="fixed top-0 right-0 left-64 h-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 z-30">
@@ -78,9 +106,10 @@ export default function DashboardNavbar() {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-              className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-primary-dark flex items-center justify-center text-white font-bold cursor-pointer hover:shadow-lg transition-shadow"
+              className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-primary-dark flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:shadow-lg transition-shadow"
+              aria-label={locale === 'en' ? 'Account menu' : 'खाता मेनू'}
             >
-              JD
+              {initials}
             </button>
 
             {isProfileDropdownOpen && (

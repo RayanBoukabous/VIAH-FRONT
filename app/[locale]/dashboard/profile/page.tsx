@@ -1,36 +1,106 @@
 'use client';
 
 import { useTranslations, useLocale } from 'next-intl';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Sidebar from '@/components/Sidebar';
 import DashboardNavbar from '@/components/DashboardNavbar';
+import { getMe, uploadProfileImage, type AuthUser } from '@/lib/api';
+
+type ProfileForm = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  address: string;
+  studyYear: string;
+  specialty: string;
+  studentId: string;
+  enrollmentDate: string;
+  totalCourses: number;
+  completedCourses: number;
+  totalLessons: number;
+  completedLessons: number;
+  studyTime: string;
+  averageScore: number;
+};
+
+const emptyForm = (): ProfileForm => ({
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  dateOfBirth: '',
+  address: '',
+  studyYear: '',
+  specialty: '',
+  studentId: '',
+  enrollmentDate: '',
+  totalCourses: 0,
+  completedCourses: 0,
+  totalLessons: 0,
+  completedLessons: 0,
+  studyTime: '—',
+  averageScore: 0,
+});
+
+function formFromUser(user: AuthUser, extras: Partial<ProfileForm>): ProfileForm {
+  return {
+    ...emptyForm(),
+    firstName: user.firstName ?? '',
+    lastName: user.lastName ?? '',
+    email: user.email ?? '',
+    ...extras,
+  };
+}
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
   const locale = useLocale();
   const [isEditing, setIsEditing] = useState(false);
+  const [apiUser, setApiUser] = useState<AuthUser | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  // Mock data - à remplacer par des données réelles
-  const profileData = {
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
+  const mockExtras: Partial<ProfileForm> = {
     phone: '+91 98765 43210',
-    dateOfBirth: '2002-05-15',
-    address: '123 Main Street, New Delhi, Delhi 110001, India',
-    studyYear: '2ème année',
-    specialty: 'Informatique',
-    studentId: 'VIAH2024001',
-    enrollmentDate: '2023-09-01',
-    totalCourses: 12,
-    completedCourses: 4,
-    totalLessons: 120,
-    completedLessons: 45,
-    studyTime: '156h 30min',
-    averageScore: 87.5,
+    dateOfBirth: '2007-06-12',
+    address: '42 Learning Lane, Mumbai, Maharashtra 400001, India',
+    studyYear: 'Bac',
+    specialty: 'Mathematics & Technical',
+    studentId: 'VIAH2024BR001',
+    enrollmentDate: '2024-09-01',
+    totalCourses: 10,
+    completedCourses: 3,
+    totalLessons: 142,
+    completedLessons: 58,
+    studyTime: '89h 15min',
+    averageScore: 84.2,
   };
 
-  const [formData, setFormData] = useState(profileData);
+  const [formData, setFormData] = useState<ProfileForm>(() => emptyForm());
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const user = await getMe();
+        if (!cancelled) {
+          setApiUser(user);
+          setFormData(formFromUser(user, mockExtras));
+          setLoadError(false);
+        }
+      } catch {
+        if (!cancelled) setLoadError(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const display = formData;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -38,14 +108,35 @@ export default function ProfilePage() {
   };
 
   const handleSave = () => {
-    // TODO: Implement save logic
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    setFormData(profileData);
+    if (apiUser) setFormData(formFromUser(apiUser, mockExtras));
     setIsEditing(false);
   };
+
+  const onAvatarFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarBusy(true);
+    try {
+      await uploadProfileImage(file);
+      const user = await getMe();
+      setApiUser(user);
+      setFormData(formFromUser(user, mockExtras));
+    } catch {
+      /* keep UI stable */
+    } finally {
+      setAvatarBusy(false);
+      e.target.value = '';
+    }
+  };
+
+  const initials =
+    display.firstName && display.lastName
+      ? `${display.firstName[0]}${display.lastName[0]}`
+      : apiUser?.username?.slice(0, 2).toUpperCase() ?? '?';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -55,6 +146,13 @@ export default function ProfilePage() {
       <main className="ml-64 pt-60 pb-6 p-4 lg:p-6 relative z-10">
         <div className="max-w-[1600px] mx-auto">
           {/* Header */}
+          {loadError && (
+            <div className="mb-6 rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+              {locale === 'hi'
+                ? 'प्रोफ़ाइल API से लोड नहीं हो सकी।'
+                : 'Could not load profile from the API.'}
+            </div>
+          )}
           <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700 pt-12">
             <div className="flex items-center justify-between">
               <div>
@@ -62,9 +160,7 @@ export default function ProfilePage() {
                   {t('title')}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">
-                  {locale === 'en' 
-                    ? 'Manage your profile information and preferences' 
-                    : 'अपनी प्रोफ़ाइल जानकारी और प्राथमिकताएं प्रबंधित करें'}
+                  Manage your profile information and preferences
                 </p>
               </div>
               {!isEditing ? (
@@ -118,7 +214,7 @@ export default function ProfilePage() {
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     ) : (
-                      <p className="text-gray-900 dark:text-white font-medium">{profileData.firstName}</p>
+                      <p className="text-gray-900 dark:text-white font-medium">{display.firstName}</p>
                     )}
                   </div>
                   <div>
@@ -134,7 +230,7 @@ export default function ProfilePage() {
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     ) : (
-                      <p className="text-gray-900 dark:text-white font-medium">{profileData.lastName}</p>
+                      <p className="text-gray-900 dark:text-white font-medium">{display.lastName}</p>
                     )}
                   </div>
                   <div>
@@ -150,7 +246,7 @@ export default function ProfilePage() {
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     ) : (
-                      <p className="text-gray-900 dark:text-white font-medium">{profileData.email}</p>
+                      <p className="text-gray-900 dark:text-white font-medium">{display.email}</p>
                     )}
                   </div>
                   <div>
@@ -166,7 +262,7 @@ export default function ProfilePage() {
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     ) : (
-                      <p className="text-gray-900 dark:text-white font-medium">{profileData.phone}</p>
+                      <p className="text-gray-900 dark:text-white font-medium">{display.phone}</p>
                     )}
                   </div>
                   <div>
@@ -182,7 +278,7 @@ export default function ProfilePage() {
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     ) : (
-                      <p className="text-gray-900 dark:text-white font-medium">{profileData.dateOfBirth}</p>
+                      <p className="text-gray-900 dark:text-white font-medium">{display.dateOfBirth}</p>
                     )}
                   </div>
                   <div className="md:col-span-2">
@@ -198,7 +294,7 @@ export default function ProfilePage() {
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     ) : (
-                      <p className="text-gray-900 dark:text-white font-medium">{profileData.address}</p>
+                      <p className="text-gray-900 dark:text-white font-medium">{display.address}</p>
                     )}
                   </div>
                 </div>
@@ -214,13 +310,13 @@ export default function ProfilePage() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {t('studentId')}
                     </label>
-                    <p className="text-gray-900 dark:text-white font-medium">{profileData.studentId}</p>
+                    <p className="text-gray-900 dark:text-white font-medium">{display.studentId}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {t('enrollmentDate')}
                     </label>
-                    <p className="text-gray-900 dark:text-white font-medium">{profileData.enrollmentDate}</p>
+                    <p className="text-gray-900 dark:text-white font-medium">{display.enrollmentDate}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -235,7 +331,7 @@ export default function ProfilePage() {
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     ) : (
-                      <p className="text-gray-900 dark:text-white font-medium">{profileData.studyYear}</p>
+                      <p className="text-gray-900 dark:text-white font-medium">{display.studyYear}</p>
                     )}
                   </div>
                   <div>
@@ -251,7 +347,7 @@ export default function ProfilePage() {
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     ) : (
-                      <p className="text-gray-900 dark:text-white font-medium">{profileData.specialty}</p>
+                      <p className="text-gray-900 dark:text-white font-medium">{display.specialty}</p>
                     )}
                   </div>
                 </div>
@@ -262,13 +358,28 @@ export default function ProfilePage() {
             <div className="space-y-6">
               {/* Profile Avatar */}
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
-                <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary to-primary-dark flex items-center justify-center text-white text-4xl font-bold shadow-lg">
-                  {profileData.firstName[0]}{profileData.lastName[0]}
+                <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary to-primary-dark flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+                  {initials}
                 </div>
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAvatarFile} />
+                <button
+                  type="button"
+                  disabled={avatarBusy}
+                  onClick={() => fileRef.current?.click()}
+                  className="mb-4 text-sm font-semibold text-primary hover:text-primary-dark dark:hover:text-primary-light disabled:opacity-50"
+                >
+                  {avatarBusy
+                    ? locale === 'hi'
+                      ? 'अपलोड…'
+                      : 'Uploading…'
+                    : locale === 'hi'
+                      ? 'फोटो अपलोड करें'
+                      : 'Upload photo'}
+                </button>
                 <h3 className="text-xl font-heading font-bold text-gray-900 dark:text-white mb-1">
-                  {profileData.firstName} {profileData.lastName}
+                  {display.firstName} {display.lastName}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">{profileData.specialty}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">{display.specialty}</p>
               </div>
 
               {/* Statistics */}
@@ -279,27 +390,27 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                     <span className="text-sm text-gray-600 dark:text-gray-400">{t('totalCourses')}</span>
-                    <span className="text-lg font-bold text-gray-900 dark:text-white">{profileData.totalCourses}</span>
+                    <span className="text-lg font-bold text-gray-900 dark:text-white">{display.totalCourses}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                     <span className="text-sm text-gray-600 dark:text-gray-400">{t('completedCourses')}</span>
-                    <span className="text-lg font-bold text-primary dark:text-primary-light">{profileData.completedCourses}</span>
+                    <span className="text-lg font-bold text-primary dark:text-primary-light">{display.completedCourses}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                     <span className="text-sm text-gray-600 dark:text-gray-400">{t('totalLessons')}</span>
-                    <span className="text-lg font-bold text-gray-900 dark:text-white">{profileData.totalLessons}</span>
+                    <span className="text-lg font-bold text-gray-900 dark:text-white">{display.totalLessons}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                     <span className="text-sm text-gray-600 dark:text-gray-400">{t('completedLessons')}</span>
-                    <span className="text-lg font-bold text-primary dark:text-primary-light">{profileData.completedLessons}</span>
+                    <span className="text-lg font-bold text-primary dark:text-primary-light">{display.completedLessons}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                     <span className="text-sm text-gray-600 dark:text-gray-400">{t('studyTime')}</span>
-                    <span className="text-lg font-bold text-gray-900 dark:text-white">{profileData.studyTime}</span>
+                    <span className="text-lg font-bold text-gray-900 dark:text-white">{display.studyTime}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/10 to-primary-dark/10 dark:from-primary/20 dark:to-primary-dark/20 rounded-lg border border-primary/20">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('averageScore')}</span>
-                    <span className="text-2xl font-bold text-primary dark:text-primary-light">{profileData.averageScore}%</span>
+                    <span className="text-2xl font-bold text-primary dark:text-primary-light">{display.averageScore}%</span>
                   </div>
                 </div>
               </div>

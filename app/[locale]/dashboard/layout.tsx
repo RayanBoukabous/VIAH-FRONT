@@ -1,7 +1,9 @@
+import DashboardAuthGuard from '@/components/DashboardAuthGuard';
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <DashboardAuthGuard>{children}</DashboardAuthGuard>;
 }
