@@ -5,6 +5,8 @@ const withNextIntl = createNextIntlPlugin();
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  /** Avoid stale / missing vendor chunks for next-intl → @formatjs in dev (delete `.next` if error persists). */
+  transpilePackages: ['next-intl'],
   /**
    * Proxy API on the same origin as the Next app so Set-Cookie from login applies to localhost
    * (avoids cross-origin cookie loss with fetch credentials). Configure real backend with API_UPSTREAM.

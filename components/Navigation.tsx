@@ -16,9 +16,7 @@ export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 12);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -30,114 +28,120 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-      scrolled 
-        ? 'bg-gradient-to-r from-primary-light/95 via-primary/95 to-primary-dark/95 dark:from-gray-900/95 dark:via-gray-900/95 dark:to-gray-900/95 backdrop-blur-xl shadow-lg border-b border-primary/20 dark:border-gray-700/50' 
-        : 'bg-gradient-to-r from-primary-light/80 via-primary/80 to-primary-dark/80 dark:from-gray-900/80 dark:via-gray-900/80 dark:to-gray-900/80 backdrop-blur-lg border-b border-transparent'
-    }`}>
-      <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          {/* Logo Section - larger for premium presence */}
-          <Link href={`/${locale}`} className="flex items-center space-x-3 group">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-[box-shadow,background-color,border-color] duration-300 ${
+        scrolled
+          ? 'bg-white/92 dark:bg-slate-950/92 backdrop-blur-xl border-b border-slate-200/95 dark:border-white/[0.09] shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.45)]'
+          : 'bg-white/75 dark:bg-slate-950/75 backdrop-blur-lg border-b border-slate-200/60 dark:border-white/[0.06]'
+      }`}
+    >
+      <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-20">
+        <div className="flex justify-between items-center h-[72px] lg:h-[76px]">
+          <Link href={`/${locale}`} className="flex items-center gap-3 group shrink-0">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary-dark rounded-xl blur-lg opacity-0 group-hover:opacity-30 dark:group-hover:opacity-20 transition-opacity duration-300"></div>
-              <div className="relative flex items-center">
-                <Image
-                  src="/assets/logo/logo_viah.png"
-                  alt="VIAH Logo"
-                  width={180}
-                  height={64}
-                  className="h-14 w-auto dark:brightness-110 group-hover:scale-[1.02] transition-transform duration-300"
-                  priority
-                />
-              </div>
+              <span className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary/25 to-cyan-500/20 opacity-0 group-hover:opacity-100 blur-lg transition-opacity duration-500" />
+              <Image
+                src="/assets/logo/logo_viah.png"
+                alt="VIAH"
+                width={176}
+                height={56}
+                className="relative h-11 lg:h-12 w-auto dark:brightness-110 group-hover:scale-[1.02] transition-transform duration-300"
+                priority
+              />
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
-            {navItems.map((item) => {
-              const isActive = pathname === `/${locale}${item.href}` || (item.href === '/' && pathname === `/${locale}`);
-              return (
-                <Link
-                  key={item.key}
-                  href={`/${locale}${item.href}`}
-                  className={`relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-                    isActive
-                      ? 'text-white dark:text-white'
-                      : 'text-white/90 dark:text-gray-300 hover:text-white dark:hover:text-white'
-                  }`}
-                >
-                  <span className="relative z-10">{t(item.key)}</span>
-                  {isActive && (
-                    <span className="absolute inset-0 bg-white/20 dark:bg-white/20 rounded-lg backdrop-blur-sm"></span>
-                  )}
-                  <span className={`absolute bottom-0 left-0 right-0 h-0.5 bg-white transition-all duration-300 ${
-                    isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-                  } origin-center`}></span>
-                </Link>
-              );
-            })}
-          </div>
+          <nav className="hidden lg:flex items-center justify-center flex-1 px-8">
+            <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-slate-100/90 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] shadow-inner">
+              {navItems.map((item) => {
+                const isActive =
+                  pathname === `/${locale}${item.href}` ||
+                  (item.href === '/' && pathname === `/${locale}`);
+                return (
+                  <Link
+                    key={item.key}
+                    href={`/${locale}${item.href}`}
+                    className={`relative px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                      isActive
+                        ? 'text-white shadow-md shadow-primary/25'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {isActive && (
+                      <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary to-primary-dark dark:from-blue-500 dark:to-cyan-600" />
+                    )}
+                    <span className="relative z-10">{t(item.key)}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
 
-          {/* Right Side Actions - premium order: settings group then primary CTA */}
-          <div className="hidden lg:flex items-center gap-2">
-            <div className="flex items-center gap-1.5 mr-2 py-1.5 pl-2 pr-1.5 rounded-xl bg-white/10 dark:bg-black/20 border border-white/10 dark:border-white/5">
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-1 rounded-2xl border border-slate-200/90 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.04] px-2 py-1.5 shadow-sm">
               <LanguageDropdown />
               <ThemeToggle />
             </div>
             <Link
               href={`/${locale}/login`}
-              className="px-6 py-3 bg-white text-primary dark:bg-white dark:text-primary-dark rounded-xl font-semibold text-base hover:bg-gray-50 dark:hover:bg-gray-100 hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] transition-all duration-200 border border-white/50 dark:border-gray-600/50 min-h-[44px] inline-flex items-center justify-center"
+              className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-primary to-primary-dark dark:from-blue-500 dark:to-cyan-600 hover:brightness-105 dark:hover:brightness-110 shadow-lg shadow-primary/25 dark:shadow-cyan-900/30 border border-white/10 transition-all active:scale-[0.98]"
             >
               {t('login')}
             </Link>
           </div>
 
-          {/* Mobile: same premium group + menu */}
           <div className="lg:hidden flex items-center gap-2">
-            <div className="flex items-center gap-1 rounded-xl bg-white/10 dark:bg-black/20 border border-white/10 py-1.5 px-2">
+            <div className="flex items-center rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white/90 dark:bg-white/[0.04] px-1.5 py-1">
               <LanguageDropdown />
               <ThemeToggle />
             </div>
             <button
+              type="button"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light transition-colors relative z-50"
-              aria-label="Toggle menu"
+              className="p-2.5 rounded-xl text-slate-800 dark:text-slate-100 border border-slate-200/90 dark:border-white/[0.1] bg-white/90 dark:bg-white/[0.05] hover:bg-slate-50 dark:hover:bg-white/[0.08] transition-colors"
+              aria-label="Menu"
             >
-              <div className="w-6 h-6 relative">
-                <span className={`absolute top-0 left-0 w-6 h-0.5 bg-current transition-all duration-300 ${
-                  isMenuOpen ? 'rotate-45 top-2.5' : ''
-                }`}></span>
-                <span className={`absolute top-2.5 left-0 w-6 h-0.5 bg-current transition-all duration-300 ${
-                  isMenuOpen ? 'opacity-0' : 'opacity-100'
-                }`}></span>
-                <span className={`absolute top-5 left-0 w-6 h-0.5 bg-current transition-all duration-300 ${
-                  isMenuOpen ? '-rotate-45 top-2.5' : ''
-                }`}></span>
+              <div className="w-5 h-5 relative">
+                <span
+                  className={`absolute left-0 top-1 w-5 h-0.5 rounded-full bg-current transition-all duration-300 ${
+                    isMenuOpen ? 'top-2.5 rotate-45' : ''
+                  }`}
+                />
+                <span
+                  className={`absolute left-0 top-2.5 w-5 h-0.5 rounded-full bg-current transition-all duration-300 ${
+                    isMenuOpen ? 'opacity-0' : ''
+                  }`}
+                />
+                <span
+                  className={`absolute left-0 top-4 w-5 h-0.5 rounded-full bg-current transition-all duration-300 ${
+                    isMenuOpen ? 'top-2.5 -rotate-45' : ''
+                  }`}
+                />
               </div>
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        <div className={`lg:hidden overflow-hidden transition-all duration-300 ${
-          isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-        }`}>
-          <div className="py-6 space-y-2 border-t border-white/20 dark:border-gray-700 mt-2">
-            {navItems.map((item, index) => {
-              const isActive = pathname === `/${locale}${item.href}` || (item.href === '/' && pathname === `/${locale}`);
+        <div
+          className={`lg:hidden overflow-hidden transition-all duration-300 ease-out ${
+            isMenuOpen ? 'max-h-[320px] opacity-100 border-t border-slate-200/80 dark:border-white/[0.08]' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="py-4 space-y-1">
+            {navItems.map((item) => {
+              const isActive =
+                pathname === `/${locale}${item.href}` ||
+                (item.href === '/' && pathname === `/${locale}`);
               return (
                 <Link
                   key={item.key}
                   href={`/${locale}${item.href}`}
-                  className={`block px-4 py-3 rounded-lg transition-all duration-300 font-medium ${
+                  className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${
                     isActive
-                      ? 'bg-white/20 dark:bg-white/20 text-white dark:text-white font-semibold backdrop-blur-sm'
-                      : 'text-white/90 dark:text-gray-300 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white'
+                      ? 'bg-primary/15 text-primary dark:text-cyan-300 dark:bg-cyan-500/10'
+                      : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.06]'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
-                  style={{ animationDelay: `${index * 50}ms` }}
                 >
                   {t(item.key)}
                 </Link>
@@ -145,7 +149,7 @@ export default function Navigation() {
             })}
             <Link
               href={`/${locale}/login`}
-              className="block mt-4 px-4 py-3.5 rounded-xl bg-white text-primary dark:bg-white dark:text-primary-dark font-semibold text-center hover:bg-gray-50 dark:hover:bg-gray-100 transition-all duration-200 border border-white/30"
+              className="block mt-3 text-center px-4 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-primary to-primary-dark dark:from-blue-500 dark:to-cyan-600 shadow-md"
               onClick={() => setIsMenuOpen(false)}
             >
               {t('login')}
@@ -153,6 +157,6 @@ export default function Navigation() {
           </div>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

@@ -330,3 +330,125 @@ export async function getSpecialities(levelId?: string): Promise<Speciality[]> {
     .map(mapSpeciality)
     .filter((x): x is Speciality => x !== null);
 }
+
+/** GET /terms/my — current user's terms (shape may vary by API). */
+export type UserTerm = {
+  id: string;
+  name: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  raw?: Record<string, unknown>;
+};
+
+function mapUserTerm(raw: unknown): UserTerm | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const id = typeof o.id === 'string' ? o.id : null;
+  if (!id) return null;
+  const name =
+    (typeof o.name === 'string' && o.name.trim()) ||
+    (typeof o.title === 'string' && o.title.trim()) ||
+    (typeof o.label === 'string' && o.label.trim()) ||
+    id;
+  const description =
+    typeof o.description === 'string'
+      ? o.description
+      : typeof o.summary === 'string'
+        ? o.summary
+        : undefined;
+  return {
+    id,
+    name,
+    description,
+    startDate: typeof o.startDate === 'string' ? o.startDate : typeof o.start === 'string' ? o.start : undefined,
+    endDate: typeof o.endDate === 'string' ? o.endDate : typeof o.end === 'string' ? o.end : undefined,
+    raw: o,
+  };
+}
+
+export async function getMyTerms(): Promise<UserTerm[]> {
+  const res = await fetchWithAuthRetry(apiUrl('/terms/my'), {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) {
+    throw new ApiError(res.status, await parseErrorBody(res));
+  }
+  const json: unknown = await res.json();
+  return normalizeJsonArray(json)
+    .map(mapUserTerm)
+    .filter((x): x is UserTerm => x !== null);
+}
+
+/** GET /courses/my?termId= — courses for current user in a term. */
+export type UserCourse = {
+  id: string;
+  name: string;
+  description?: string;
+  /** Slug for navigation to module page when present */
+  module?: string;
+  moduleSlug?: string;
+  progress?: number;
+  raw?: Record<string, unknown>;
+};
+
+function mapUserCourse(raw: unknown): UserCourse | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const id = typeof o.id === 'string' ? o.id : null;
+  if (!id) return null;
+  const name =
+    (typeof o.name === 'string' && o.name.trim()) ||
+    (typeof o.title === 'string' && o.title.trim()) ||
+    id;
+  const mod =
+    typeof o.module === 'string'
+      ? o.module
+      : typeof o.moduleSlug === 'string'
+        ? o.moduleSlug
+        : typeof o.slug === 'string'
+          ? o.slug
+          : undefined;
+  const description =
+    typeof o.description === 'string' ? o.description : typeof o.summary === 'string' ? o.summary : undefined;
+  let progress: number | undefined;
+  if (typeof o.progress === 'number') progress = o.progress;
+  else if (typeof o.progressPercent === 'number') progress = o.progressPercent;
+  return {
+    id,
+    name,
+    description,
+    module: mod,
+    moduleSlug: typeof o.moduleSlug === 'string' ? o.moduleSlug : mod,
+    progress,
+    raw: o,
+  };
+}
+
+export async function getMyCourses(termId: string): Promise<UserCourse[]> {
+  const qs = new URLSearchParams();
+  qs.set('termId', termId);
+  const res = await fetchWithAuthRetry(apiUrl(`/courses/my?${qs.toString()}`), {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) {
+    throw new ApiError(res.status, await parseErrorBody(res));
+  }
+  const json: unknown = await res.json();
+  return normalizeJsonArray(json)
+    .map(mapUserCourse)
+    .filter((x): x is UserCourse => x !== null);
+}
+
+/** DELETE /courses/{id} */
+export async function deleteCourse(courseId: string): Promise<void> {
+  const res = await fetchWithAuthRetry(apiUrl(`/courses/${encodeURIComponent(courseId)}`), {
+    method: 'DELETE',
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) {
+    throw new ApiError(res.status, await parseErrorBody(res));
+  }
+}

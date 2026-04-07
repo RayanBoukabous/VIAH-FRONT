@@ -88,10 +88,36 @@
         "sidebar": {
             "dashboard": "Dashboard",
             "trimesters": "My Trimesters",
+            "myTerms": "My terms",
             "courses": "My Courses",
             "modules": "My Modules",
             "progress": "Progress",
             "settings": "Settings"
+        },
+        "termsPage": {
+            "title": "My terms",
+            "subtitle": "Your academic terms — pick one to view and manage courses.",
+            "loading": "Loading…",
+            "empty": "No terms yet.",
+            "error": "Could not load terms.",
+            "viewCourses": "Open courses",
+            "badge": "Academic terms"
+        },
+        "termCoursesPage": {
+            "title": "Term courses",
+            "subtitle": "Courses linked to this term",
+            "loading": "Loading…",
+            "empty": "No courses in this term.",
+            "error": "Could not load courses.",
+            "deleteCourse": "Remove",
+            "confirmTitle": "Remove this course?",
+            "confirmBody": "This removes the course from your list for this term.",
+            "cancel": "Cancel",
+            "confirm": "Remove",
+            "deleteError": "Could not remove the course.",
+            "back": "Back to terms",
+            "openCourse": "Open course",
+            "termLabel": "Term"
         },
         "profile": "Profile",
         "logout": "Logout"
