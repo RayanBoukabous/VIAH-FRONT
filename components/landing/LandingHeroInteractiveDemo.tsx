@@ -161,7 +161,7 @@ export default function LandingHeroInteractiveDemo() {
   const dashHref = `/${locale}/dashboard`;
 
   return (
-    <div className="group relative mx-auto w-full max-w-[480px] xl:max-w-none">
+    <div className="group relative mx-auto w-full max-w-[min(100%,620px)] sm:max-w-[min(100%,680px)] xl:max-w-full">
       <div className="pointer-events-none absolute -inset-2 rounded-[2.5rem] bg-gradient-to-br from-blue-500/25 via-cyan-400/15 to-violet-500/20 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
       <div className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-slate-50/90 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.35)] dark:border-white/[0.08] dark:bg-[#0c1220]/95 dark:shadow-[0_24px_60px_-24px_rgba(0,0,0,0.65)]">
         {/* Soft rounded ambient + edge fades (avoids “square” gradient cuts) */}
@@ -207,7 +207,7 @@ export default function LandingHeroInteractiveDemo() {
           </Link>
         </div>
 
-        <div className="relative z-10 flex min-h-[min(520px,62vh)] flex-row">
+        <div className="relative z-10 flex min-h-[min(420px,min(62vh,720px))] flex-row sm:min-h-[min(480px,min(65vh,760px))]">
           {/* Sidebar — on small screens: overlay panel; sm+: in-flow */}
           <AnimatePresence
             initial={false}
@@ -225,7 +225,7 @@ export default function LandingHeroInteractiveDemo() {
                 transition={{ type: 'spring', damping: 30, stiffness: 380 }}
                 className="absolute left-0 top-0 z-30 h-full w-44 shrink-0 overflow-hidden rounded-br-3xl border-slate-200/70 shadow-lg shadow-slate-900/10 dark:border-white/[0.06] dark:shadow-black/40 sm:relative sm:left-auto sm:top-auto sm:z-0 sm:h-auto sm:rounded-none sm:shadow-none sm:border-r"
               >
-                <nav className="flex h-full max-h-[min(520px,62vh)] w-44 flex-col gap-3 overflow-y-auto overscroll-contain rounded-br-3xl border-r border-slate-200/70 bg-slate-100/95 px-2 py-3 backdrop-blur-sm dark:border-white/[0.06] dark:bg-[#0a0f18]/95 sm:rounded-none">
+                <nav className="flex h-full max-h-[min(720px,min(65vh,800px))] w-44 flex-col gap-3 overflow-y-auto overscroll-contain rounded-br-3xl border-r border-slate-200/70 bg-slate-100/95 px-2 py-3 backdrop-blur-sm dark:border-white/[0.06] dark:bg-[#0a0f18]/95 sm:rounded-none">
                   {navGroups.map((g) => (
                     <div key={g.label[0]}>
                       <p className="mb-1.5 px-2 text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
@@ -292,7 +292,7 @@ export default function LandingHeroInteractiveDemo() {
 
           {/* Main preview pane — pad until sidebar exit ends (not only when showSidebar) */}
           <div
-            className={`relative z-10 min-h-[min(480px,58vh)] min-w-0 flex-1 overflow-y-auto transition-[padding] duration-300 ease-out sm:z-10 ${
+            className={`relative z-10 min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden transition-[padding] duration-300 ease-out sm:z-10 ${
               sidebarReserveLayout ? 'max-sm:pl-44' : ''
             }`}
           >

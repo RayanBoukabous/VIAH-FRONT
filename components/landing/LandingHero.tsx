@@ -48,7 +48,7 @@ export default function LandingHero() {
   return (
     <section
       id="home"
-      className="relative overflow-x-hidden px-4 pb-20 pt-28 sm:px-5 sm:pb-24 sm:pt-32 lg:px-8 lg:pb-28 lg:pt-32 xl:px-10 xl:pt-36"
+      className="relative overflow-x-clip px-4 pb-20 pt-28 sm:px-5 sm:pb-24 sm:pt-32 lg:px-6 lg:pb-28 lg:pt-32 xl:px-10 xl:pt-36"
     >
       {/* Background logo — contained in section, no overflow scroll */}
       <div
@@ -72,7 +72,7 @@ export default function LandingHero() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto grid w-full max-w-[min(100%,1320px)] items-center gap-12 overflow-visible lg:gap-14 xl:grid-cols-[1.12fr_0.88fr] xl:gap-16 2xl:max-w-[1600px]">
+      <div className="relative z-10 mx-auto grid w-full max-w-[min(100%,1320px)] items-start gap-12 overflow-visible lg:gap-14 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.15fr)] xl:items-center xl:gap-12 2xl:grid-cols-[1.12fr_0.88fr] 2xl:gap-16 2xl:max-w-[1600px]">
         <div className="relative z-20">
           <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-blue-200/80 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-700 backdrop-blur-xl dark:border-blue-400/15 dark:bg-white/[0.04] dark:text-blue-200">
             <span className="h-2 w-2 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400" />
@@ -121,14 +121,14 @@ export default function LandingHero() {
           </div>
         </div>
 
-        <div className="relative z-20 mx-auto w-full max-w-[1100px] px-1 sm:px-3">
-          {/* Aperçu dashboard (cliquable) à gauche — petites cartes à droite, mêmes données mock que /dashboard */}
-          <div className="flex flex-col items-stretch gap-6 lg:gap-8 xl:flex-row xl:items-start xl:justify-center xl:gap-5 2xl:gap-8">
-            <div className="order-1 min-w-0 w-full flex-1 xl:max-w-[min(100%,min(500px,48vw))]">
+        <div className="relative z-20 min-w-0 w-full max-w-none px-0 sm:px-1 lg:px-0">
+          {/* Demo + cartes : plus large sur laptop ; colonne droite reçoit plus d’espace (grid 1.15fr) */}
+          <div className="flex flex-col items-stretch gap-6 lg:gap-6 xl:flex-row xl:items-start xl:justify-between xl:gap-4 2xl:justify-center 2xl:gap-8">
+            <div className="order-1 min-w-0 w-full flex-1 xl:min-w-0 xl:max-w-none">
               <LandingHeroInteractiveDemo />
             </div>
 
-            <div className="order-2 flex w-full flex-col gap-4 sm:mx-auto sm:max-w-md xl:order-2 xl:mx-0 xl:w-[13.5rem] xl:shrink-0 xl:pt-1">
+            <div className="order-2 flex w-full max-w-lg flex-col gap-4 sm:mx-auto xl:order-2 xl:mx-0 xl:w-[min(100%,15rem)] xl:max-w-[15rem] xl:shrink-0 xl:pt-1">
               <HeroFloatCard duration={6.2} delay={0}>
                 <Link
                   href={`/${locale}/dashboard`}
