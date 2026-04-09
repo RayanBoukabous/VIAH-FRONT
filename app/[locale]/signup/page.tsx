@@ -4,10 +4,20 @@ import React from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ApiError, signup, getLevels, getSpecialities, type Level, type Speciality } from '@/lib/api';
+import {
+  ApiError,
+  signup,
+  getLevels,
+  getCurriculums,
+  getSpecialities,
+  type Level,
+  type Speciality,
+  type Curriculum,
+} from '@/lib/api';
+import { findCbseCurriculum, getLevelTierFromName, type SignupLevelTier } from '@/lib/signupLevelTier';
 import PsychologyOutlined from '@mui/icons-material/PsychologyOutlined';
 import PublicOutlined from '@mui/icons-material/PublicOutlined';
 import InsightsOutlined from '@mui/icons-material/InsightsOutlined';
@@ -30,11 +40,13 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [age, setAge] = useState(18);
   const [levelId, setLevelId] = useState('');
+  const [curriculumId, setCurriculumId] = useState('');
   const [specialityId, setSpecialityId] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const [levels, setLevels] = useState<Level[]>([]);
+  const [curriculums, setCurriculums] = useState<Curriculum[]>([]);
   const [specialities, setSpecialities] = useState<Speciality[]>([]);
   const [levelsLoading, setLevelsLoading] = useState(true);
   const [specialitiesLoading, setSpecialitiesLoading] = useState(false);
@@ -111,11 +123,15 @@ export default function SignupPage() {
       setLevelsLoading(true);
       setCatalogError(false);
       try {
-        const list = await getLevels();
-        if (!cancelled) setLevels(list);
+        const [levelList, currList] = await Promise.all([getLevels(), getCurriculums()]);
+        if (!cancelled) {
+          setLevels(levelList);
+          setCurriculums(currList);
+        }
       } catch {
         if (!cancelled) {
           setLevels([]);
+          setCurriculums([]);
           setCatalogError(true);
         }
       } finally {
@@ -127,8 +143,35 @@ export default function SignupPage() {
     };
   }, []);
 
+  const selectedLevel = useMemo(() => levels.find((l) => l.id === levelId), [levels, levelId]);
+  const tier: SignupLevelTier = useMemo(
+    () => (selectedLevel ? getLevelTierFromName(selectedLevel.name) : 'g910'),
+    [selectedLevel]
+  );
+
+  /** Grade 9–12: clear curriculum when level changes away from K–8. */
+  useEffect(() => {
+    if (!levelId || !selectedLevel) return;
+    if (getLevelTierFromName(selectedLevel.name) === 'k8') return;
+    setCurriculumId('');
+  }, [levelId, selectedLevel]);
+
+  /** K–8: lock to CBSE from catalog when levels + curriculums are known. */
+  useEffect(() => {
+    if (!levelId || !selectedLevel || !curriculums.length) return;
+    if (getLevelTierFromName(selectedLevel.name) !== 'k8') return;
+    const cbse = findCbseCurriculum(curriculums);
+    if (cbse) setCurriculumId(cbse.id);
+    else setCurriculumId('');
+  }, [levelId, selectedLevel, curriculums]);
+
   useEffect(() => {
     if (!levelId) {
+      setSpecialities([]);
+      setSpecialityId('');
+      return;
+    }
+    if (tier !== 'g1112') {
       setSpecialities([]);
       setSpecialityId('');
       return;
@@ -139,7 +182,7 @@ export default function SignupPage() {
       setSpecialitiesLoading(true);
       setSpecialityId('');
       try {
-        const list = await getSpecialities(levelId);
+        const list = await getSpecialities();
         if (!cancelled) setSpecialities(list);
       } catch {
         if (!cancelled) {
@@ -153,7 +196,21 @@ export default function SignupPage() {
     return () => {
       cancelled = true;
     };
-  }, [levelId]);
+  }, [levelId, tier]);
+
+  const filteredSpecialities = useMemo(() => {
+    if (!levelId || !curriculumId) return [];
+    return specialities.filter(
+      (s) => s.levelId === levelId && s.curriculumId === curriculumId
+    );
+  }, [specialities, levelId, curriculumId]);
+
+  useEffect(() => {
+    setSpecialityId((prev) => {
+      if (!prev) return prev;
+      return filteredSpecialities.some((s) => s.id === prev) ? prev : '';
+    });
+  }, [filteredSpecialities]);
 
   const inputClass =
     'block w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-primary/40 dark:focus:border-cyan-500/35 focus:bg-white dark:focus:bg-white/[0.06] transition-all shadow-sm dark:shadow-none';
@@ -161,6 +218,25 @@ export default function SignupPage() {
 
   const canGoStep2 = email.trim() && username.trim() && password.length >= 1;
   const canGoStep3 = firstName.trim() && lastName.trim() && age >= 1 && age <= 120;
+
+  const cbseCurriculum = findCbseCurriculum(curriculums);
+  const k8CbseMissing = tier === 'k8' && curriculums.length > 0 && !cbseCurriculum;
+
+  const g1112Blocked =
+    tier === 'g1112' &&
+    !specialitiesLoading &&
+    !!levelId &&
+    !!curriculumId &&
+    filteredSpecialities.length === 0;
+  const g1112NeedsSpecialityPick = tier === 'g1112' && filteredSpecialities.length > 0;
+
+  const step3Ready =
+    Boolean(levelId && curriculumId) &&
+    (!g1112NeedsSpecialityPick || !!specialityId) &&
+    !g1112Blocked &&
+    !levelsLoading &&
+    !(tier === 'g1112' && specialitiesLoading) &&
+    !k8CbseMissing;
 
   const nextStep = () => {
     setError(null);
@@ -180,6 +256,8 @@ export default function SignupPage() {
     setError(null);
     setSubmitting(true);
     try {
+      const lv = levels.find((l) => l.id === levelId);
+      const tierSubmit: SignupLevelTier = lv ? getLevelTierFromName(lv.name) : 'g910';
       await signup({
         email,
         username,
@@ -189,7 +267,8 @@ export default function SignupPage() {
         studentData: {
           age: Number(age),
           levelId,
-          specialityId,
+          curriculumId,
+          ...(tierSubmit === 'g1112' && specialityId ? { specialityId } : {}),
         },
       });
       router.push(`/${locale}/dashboard`);
@@ -583,31 +662,71 @@ export default function SignupPage() {
                           </select>
                         </div>
                         <div>
-                          <label htmlFor="specialityId" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
-                            {t('speciality')}
+                          <label htmlFor="curriculumId" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                            {tier === 'k8' ? t('curriculumLocked') : t('curriculum')}
                           </label>
                           <select
-                            id="specialityId"
+                            id="curriculumId"
                             required
-                            value={specialityId}
-                            onChange={(e) => setSpecialityId(e.target.value)}
-                            disabled={!levelId || specialitiesLoading}
+                            value={curriculumId}
+                            onChange={(e) => setCurriculumId(e.target.value)}
+                            disabled={levelsLoading || tier === 'k8'}
                             className={selectClass}
                           >
-                            <option value="">
-                              {!levelId
-                                ? t('selectLevel')
-                                : specialitiesLoading
-                                  ? t('loadingOptions')
-                                  : t('selectSpeciality')}
-                            </option>
-                            {specialities.map((s) => (
-                              <option key={s.id} value={s.id}>
-                                {s.name}
-                              </option>
-                            ))}
+                            {tier === 'k8' ? (
+                              cbseCurriculum ? (
+                                <option value={cbseCurriculum.id}>{cbseCurriculum.name}</option>
+                              ) : (
+                                <option value="">{levelsLoading ? t('loadingOptions') : t('selectCurriculum')}</option>
+                              )
+                            ) : (
+                              <>
+                                <option value="">{levelsLoading ? t('loadingOptions') : t('selectCurriculum')}</option>
+                                {curriculums.map((c) => (
+                                  <option key={c.id} value={c.id}>
+                                    {c.name}
+                                  </option>
+                                ))}
+                              </>
+                            )}
                           </select>
+                          {k8CbseMissing && (
+                            <p className="mt-2 text-sm text-rose-600 dark:text-rose-300">{t('cbseMissing')}</p>
+                          )}
                         </div>
+                        {tier === 'g1112' && (
+                          <div>
+                            <label htmlFor="specialityId" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                              {t('speciality')}
+                            </label>
+                            <select
+                              id="specialityId"
+                              required={filteredSpecialities.length > 0}
+                              value={specialityId}
+                              onChange={(e) => setSpecialityId(e.target.value)}
+                              disabled={!levelId || !curriculumId || specialitiesLoading}
+                              className={selectClass}
+                            >
+                              <option value="">
+                                {!levelId
+                                  ? t('selectLevel')
+                                  : !curriculumId
+                                    ? t('pickCurriculumFirst')
+                                    : specialitiesLoading
+                                      ? t('loadingOptions')
+                                      : t('selectSpeciality')}
+                              </option>
+                              {filteredSpecialities.map((s) => (
+                                <option key={s.id} value={s.id}>
+                                  {s.description?.trim() ? s.description : s.name}
+                                </option>
+                              ))}
+                            </select>
+                            {g1112Blocked && (
+                              <p className="mt-2 text-sm text-amber-700 dark:text-amber-200/90">{t('specialityNoMatch')}</p>
+                            )}
+                          </div>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -631,7 +750,7 @@ export default function SignupPage() {
                         disabled={
                           (step === 1 && !canGoStep2) ||
                           (step === 2 && !canGoStep3) ||
-                          (step === 3 && (levelsLoading || !levelId || !specialityId))
+                          (step === 3 && !step3Ready)
                         }
                         className="flex-1 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-primary via-blue-600 to-cyan-600 hover:from-blue-400 hover:to-cyan-500 shadow-lg shadow-primary/25 disabled:opacity-45 disabled:cursor-not-allowed transition-all"
                       >
@@ -640,7 +759,7 @@ export default function SignupPage() {
                     ) : (
                       <motion.button
                         type="submit"
-                        disabled={submitting || levelsLoading || !levelId || !specialityId}
+                        disabled={submitting || !step3Ready}
                         whileHover={{ scale: submitting ? 1 : 1.02 }}
                         whileTap={{ scale: submitting ? 1 : 0.98 }}
                         className="group flex-1 relative py-4 rounded-xl font-bold text-white overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/30"

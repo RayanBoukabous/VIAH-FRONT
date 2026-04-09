@@ -3,7 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { getMe } from '@/lib/api';
+import { getMe, type AuthUser } from '@/lib/api';
+import { DashboardUserProvider } from '@/components/DashboardUserContext';
+import { DashboardSidebarProvider } from '@/components/DashboardSidebarContext';
+import {
+  readCachedDashboardUser,
+  writeCachedDashboardUser,
+  clearCachedDashboardUser,
+} from '@/lib/dashboardUserCache';
 
 export default function DashboardAuthGuard({
   children
@@ -12,16 +19,22 @@ export default function DashboardAuthGuard({
 }) {
   const router = useRouter();
   const locale = useLocale();
-  const [ready, setReady] = useState(false);
+  /** sessionStorage lets the shell render immediately on repeat visits; /auth/me still refreshes in the effect. */
+  const [user, setUser] = useState<AuthUser | null>(() => readCachedDashboardUser());
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        await getMe();
-        if (!cancelled) setReady(true);
-      } catch {
+        const me = await getMe();
         if (!cancelled) {
+          setUser(me);
+          writeCachedDashboardUser(me);
+        }
+      } catch {
+        clearCachedDashboardUser();
+        if (!cancelled) {
+          setUser(null);
           router.replace(`/${locale}/login`);
         }
       }
@@ -29,9 +42,9 @@ export default function DashboardAuthGuard({
     return () => {
       cancelled = true;
     };
-  }, [locale, router]);
+  }, [locale]); // router omitted on purpose — was retriggering /auth/me every navigation
 
-  if (!ready) {
+  if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#020817] relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(52,150,226,0.12)_0%,_transparent_65%)]" />
@@ -50,5 +63,9 @@ export default function DashboardAuthGuard({
     );
   }
 
-  return <>{children}</>;
+  return (
+    <DashboardUserProvider user={user}>
+      <DashboardSidebarProvider>{children}</DashboardSidebarProvider>
+    </DashboardUserProvider>
+  );
 }

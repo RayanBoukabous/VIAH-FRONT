@@ -1,196 +1,291 @@
 'use client';
 
-import { useTranslations, useLocale } from 'next-intl';
+import Link from 'next/link';
 import Image from 'next/image';
+import { useLocale } from 'next-intl';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { motion } from 'framer-motion';
 import Sidebar from '@/components/Sidebar';
 import DashboardNavbar from '@/components/DashboardNavbar';
+import { ApiError, getMyModules, type UserModule } from '@/lib/api';
+
+function cn(...parts: Array<string | false | null | undefined>) {
+  return parts.filter(Boolean).join(' ');
+}
+
+function GlassPanel({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-[24px] border border-slate-200/75 bg-white/82 shadow-[0_12px_36px_-18px_rgba(15,23,42,0.18)] backdrop-blur-xl',
+        'dark:border-white/[0.08] dark:bg-white/[0.045] dark:shadow-[0_18px_60px_-24px_rgba(0,0,0,0.55)]',
+        className
+      )}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.26),transparent_45%,rgba(59,130,246,0.05))] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_45%,rgba(6,182,212,0.08))]" />
+      {children}
+    </div>
+  );
+}
+
+function StatPill({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-slate-200/80 bg-white/70 px-4 py-3 dark:border-white/[0.08] dark:bg-white/[0.04]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+      <p className="mt-1 text-2xl font-black text-slate-950 dark:text-white tabular-nums">{value}</p>
+    </div>
+  );
+}
+
+function ModuleCardSkeleton() {
+  return (
+    <GlassPanel className="overflow-hidden">
+      <div className="module-shimmer h-48 bg-slate-100 dark:bg-white/[0.04]" />
+      <div className="space-y-3 p-5">
+        <div className="module-shimmer h-5 w-2/3 rounded-lg bg-slate-100 dark:bg-white/[0.05]" />
+        <div className="module-shimmer h-4 w-full rounded bg-slate-100 dark:bg-white/[0.05]" />
+        <div className="module-shimmer h-10 w-full rounded-xl bg-slate-100 dark:bg-white/[0.05]" />
+      </div>
+    </GlassPanel>
+  );
+}
 
 export default function ModulesPage() {
-  const t = useTranslations('dashboard');
   const locale = useLocale();
+  const [modules, setModules] = useState<UserModule[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const modules = [
-    {
-      id: 1,
-      title: locale === 'en' ? 'Mathematics' : 'गणित',
-      icon: 'https://cdn-icons-png.flaticon.com/512/2103/2103633.png',
-      description: locale === 'en' 
-        ? 'Algebra, Geometry, Calculus, Statistics' 
-        : 'बीजगणित, ज्यामिति, कैलकुलस, सांख्यिकी',
-      courses: 12,
-      lessons: 145,
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getMyModules();
+        if (!cancelled) {
+          setModules(data);
+          setError(null);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setModules([]);
+          setError(e instanceof ApiError ? 'api' : 'unknown');
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const totalCourses = useMemo(
+    () => (modules ?? []).reduce((acc, item) => acc + (item.courseCount ?? 0), 0),
+    [modules]
+  );
+
+  const totalLessons = useMemo(
+    () => (modules ?? []).reduce((acc, item) => acc + (item.lessonCount ?? 0), 0),
+    [modules]
+  );
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 26 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
     },
-    {
-      id: 2,
-      title: locale === 'en' ? 'Physics' : 'भौतिकी',
-      icon: 'https://cdn-icons-png.flaticon.com/512/2103/2103634.png',
-      description: locale === 'en' 
-        ? 'Mechanics, Thermodynamics, Optics, Electromagnetism' 
-        : 'यांत्रिकी, ऊष्मप्रवैगिकी, प्रकाशिकी, विद्युत चुंबकत्व',
-      courses: 10,
-      lessons: 128,
-    },
-    {
-      id: 3,
-      title: locale === 'en' ? 'Chemistry' : 'रसायन विज्ञान',
-      icon: 'https://cdn-icons-png.flaticon.com/512/2103/2103635.png',
-      description: locale === 'en' 
-        ? 'Organic, Inorganic, Physical, Analytical Chemistry' 
-        : 'कार्बनिक, अकार्बनिक, भौतिक, विश्लेषणात्मक रसायन विज्ञान',
-      courses: 9,
-      lessons: 112,
-    },
-    {
-      id: 4,
-      title: locale === 'en' ? 'Biology' : 'जीव विज्ञान',
-      icon: 'https://cdn-icons-png.flaticon.com/512/2103/2103636.png',
-      description: locale === 'en' 
-        ? 'Cell Biology, Genetics, Ecology, Human Anatomy' 
-        : 'कोशिका जीव विज्ञान, आनुवंशिकी, पारिस्थितिकी, मानव शरीर रचना',
-      courses: 11,
-      lessons: 138,
-    },
-    {
-      id: 5,
-      title: locale === 'en' ? 'Computer Science' : 'कंप्यूटर विज्ञान',
-      icon: 'https://cdn-icons-png.flaticon.com/512/2103/2103637.png',
-      description: locale === 'en' 
-        ? 'Programming, Data Structures, Algorithms, Databases' 
-        : 'प्रोग्रामिंग, डेटा संरचनाएं, एल्गोरिदम, डेटाबेस',
-      courses: 14,
-      lessons: 167,
-    },
-    {
-      id: 6,
-      title: locale === 'en' ? 'English' : 'अंग्रेजी',
-      icon: 'https://cdn-icons-png.flaticon.com/512/2103/2103638.png',
-      description: locale === 'en' 
-        ? 'Literature, Grammar, Composition, Communication' 
-        : 'साहित्य, व्याकरण, रचना, संचार',
-      courses: 8,
-      lessons: 95,
-    },
-    {
-      id: 7,
-      title: locale === 'en' ? 'History' : 'इतिहास',
-      icon: 'https://cdn-icons-png.flaticon.com/512/2103/2103639.png',
-      description: locale === 'en' 
-        ? 'World History, Indian History, Ancient Civilizations' 
-        : 'विश्व इतिहास, भारतीय इतिहास, प्राचीन सभ्यताएं',
-      courses: 7,
-      lessons: 89,
-    },
-    {
-      id: 8,
-      title: locale === 'en' ? 'Geography' : 'भूगोल',
-      icon: 'https://cdn-icons-png.flaticon.com/512/2103/2103640.png',
-      description: locale === 'en' 
-        ? 'Physical Geography, Human Geography, Maps, Climate' 
-        : 'भौतिक भूगोल, मानव भूगोल, मानचित्र, जलवायु',
-      courses: 6,
-      lessons: 76,
-    },
-  ];
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 dark:bg-[#0B1220] dark:text-slate-100">
+      <style>{`
+        @keyframes moduleGridMove {
+          0% { transform: translate3d(0,0,0); }
+          50% { transform: translate3d(0,-8px,0); }
+          100% { transform: translate3d(0,0,0); }
+        }
+        @keyframes moduleShimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        .module-shimmer {
+          background-image: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.52) 50%, rgba(255,255,255,0) 100%);
+          background-size: 200% 100%;
+          animation: moduleShimmer 1.6s linear infinite;
+        }
+        .dark .module-shimmer {
+          background-image: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+        }
+      `}</style>
+
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.1),transparent_28%),radial-gradient(circle_at_78%_18%,rgba(6,182,212,0.1),transparent_22%),linear-gradient(180deg,#f8fbff_0%,#f8fafc_100%)] dark:bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.18),transparent_30%),radial-gradient(circle_at_78%_18%,rgba(6,182,212,0.13),transparent_24%),linear-gradient(180deg,#0B1220_0%,#09101C_100%)]" />
+        <div
+          className="absolute inset-0 opacity-[0.28] dark:opacity-[0.16]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(148,163,184,0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.16) 1px, transparent 1px)',
+            backgroundSize: '44px 44px',
+            animation: 'moduleGridMove 16s ease-in-out infinite',
+          }}
+        />
+      </div>
+
       <Sidebar />
       <DashboardNavbar />
-      
-      <main className="ml-64 pt-60 pb-6 p-4 lg:p-6 relative z-10">
-        <div className="max-w-[1800px] mx-auto">
-          {/* Header */}
-          <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700 pt-12">
-            <h1 className="text-3xl lg:text-4xl font-heading font-bold text-gray-900 dark:text-white mb-2">
-              {locale === 'en' ? 'My Modules' : 'मेरे मॉड्यूल'}
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              {locale === 'en' 
-                ? 'Explore all available study modules and subjects' 
-                : 'सभी उपलब्ध अध्ययन मॉड्यूल और विषयों का अन्वेषण करें'}
-            </p>
-          </div>
 
-          {/* Modules Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {modules.map((module) => (
-              <div
-                key={module.id}
-                className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-2xl transition-all duration-500 cursor-pointer transform hover:-translate-y-2 flex flex-col h-full"
-                style={{ minHeight: '420px' }}
-              >
-                {/* Animated Background Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary-dark/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                
-                {/* Shine Effect */}
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-
-                {/* Content */}
-                <div className="relative z-10 p-6 flex flex-col flex-1">
-                  {/* Icon Section */}
-                  <div className="mb-5 flex items-center justify-center flex-shrink-0">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:bg-primary/30 transition-all duration-500"></div>
-                      <div className="relative bg-gray-50 dark:bg-gray-700/50 p-5 rounded-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                        <Image
-                          src={module.icon}
-                          alt={module.title}
-                          width={64}
-                          height={64}
-                          className="w-16 h-16 object-contain"
-                        />
-                      </div>
-                    </div>
+      <main className="relative z-10 ml-0 min-w-0 w-full px-3 pb-10 pt-[88px] sm:px-4 sm:pt-[92px] lg:ml-64 lg:w-auto lg:max-w-none lg:px-8">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="mx-auto w-full max-w-[1680px] space-y-6"
+        >
+          <motion.section variants={item}>
+            <GlassPanel className="p-6 lg:p-8">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(59,130,246,0.1),transparent_34%),radial-gradient(circle_at_90%_10%,rgba(6,182,212,0.1),transparent_24%)] dark:bg-[radial-gradient(circle_at_0%_0%,rgba(59,130,246,0.2),transparent_36%),radial-gradient(circle_at_90%_10%,rgba(6,182,212,0.14),transparent_28%)]" />
+              <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-3xl">
+                  <div className="mb-4 inline-flex items-center gap-3 rounded-full border border-blue-200/80 bg-blue-50/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-blue-700 dark:border-cyan-400/10 dark:bg-white/[0.04] dark:text-cyan-300/90">
+                    <span className="h-2 w-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400" />
+                    {locale === 'hi' ? 'मॉड्यूल लाइब्रेरी' : 'Module library'}
                   </div>
-
-                  {/* Title */}
-                  <h3 className="text-xl font-heading font-bold text-gray-900 dark:text-white mb-2 text-center group-hover:text-primary dark:group-hover:text-primary-light transition-colors duration-300 flex-shrink-0 min-h-[3rem] flex items-center justify-center">
-                    {module.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-5 line-clamp-2 flex-shrink-0 min-h-[2.5rem]">
-                    {module.description}
+                  <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white lg:text-5xl">
+                    {locale === 'hi' ? 'मेरे मॉड्यूल' : 'My Modules'}
+                  </h1>
+                  <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300/85 lg:text-base">
+                    {locale === 'hi'
+                      ? 'आपके लिए उपलब्ध सभी विषय, अध्याय और अध्ययन ट्रैक्स एक ही प्रीमियम दृश्य में।'
+                      : 'All your available subjects, learning tracks, and next best modules in one premium experience.'}
                   </p>
-
-                  {/* Stats */}
-                  <div className="flex items-center justify-center gap-4 mb-5 pb-5 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-primary-light transition-colors">
-                        {module.courses}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {locale === 'en' ? 'Courses' : 'पाठ्यक्रम'}
-                      </div>
-                    </div>
-                    <div className="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-primary-light transition-colors">
-                        {module.lessons}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {locale === 'en' ? 'Lessons' : 'पाठ'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Access Button */}
-                  <button className="w-full py-3 px-4 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl font-heading font-semibold text-sm hover:shadow-xl hover:shadow-primary/50 transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden flex-shrink-0 mt-auto">
-                    <span className="relative z-10">{locale === 'en' ? 'Access Module' : 'मॉड्यूल तक पहुंचें'}</span>
-                    <svg className="w-4 h-4 relative z-10 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary-dark to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </button>
                 </div>
 
-                {/* Corner Decoration */}
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/10 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-primary-dark/10 to-transparent rounded-tr-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="grid min-w-[280px] grid-cols-2 gap-3 lg:grid-cols-3">
+                  <StatPill label={locale === 'hi' ? 'मॉड्यूल' : 'Modules'} value={modules?.length ?? 0} />
+                  <StatPill label={locale === 'hi' ? 'कोर्स' : 'Courses'} value={totalCourses} />
+                  <StatPill label={locale === 'hi' ? 'लेसन' : 'Lessons'} value={totalLessons} />
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </GlassPanel>
+          </motion.section>
+
+          <motion.section variants={item}>
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <div>
+                <div className="mb-2 h-1.5 w-14 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400" />
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  {locale === 'hi' ? 'उपलब्ध मॉड्यूल' : 'Available modules'}
+                </h2>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {locale === 'hi'
+                    ? 'छोटा zoom hover, clean border highlight, no blur distractions.'
+                    : 'Clean hover interactions, subtle blue borders, and focused premium cards.'}
+                </p>
+              </div>
+            </div>
+
+            {error ? (
+              <GlassPanel className="p-5">
+                <p className="text-sm text-rose-600 dark:text-rose-300">
+                  {locale === 'hi' ? 'मॉड्यूल लोड नहीं हो सके।' : 'Could not load your modules.'}
+                </p>
+              </GlassPanel>
+            ) : null}
+
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {modules === null
+                ? [0, 1, 2, 3].map((index) => <ModuleCardSkeleton key={index} />)
+                : null}
+
+              {modules !== null && modules.length === 0 && !error ? (
+                <GlassPanel className="col-span-full p-8 text-center">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {locale === 'hi' ? 'अभी तक कोई मॉड्यूल नहीं है।' : 'No modules yet.'}
+                  </p>
+                </GlassPanel>
+              ) : null}
+
+              {modules?.map((module, index) => {
+                const coverSrc = module.imageUrl ?? module.iconUrl;
+                return (
+                  <motion.div
+                    key={module.id}
+                    variants={item}
+                    whileHover={{ y: -4, scale: 1.015 }}
+                    transition={{ type: 'spring', stiffness: 220, damping: 18, mass: 0.65 }}
+                    className="h-full"
+                  >
+                    <GlassPanel className="group h-full overflow-hidden transition-colors duration-300 hover:border-blue-400/60 dark:hover:border-blue-400/40">
+                      <div className="relative h-48 overflow-hidden">
+                        {coverSrc ? (
+                          <>
+                            <Image
+                              src={coverSrc}
+                              alt={module.name}
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                              className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/10 to-transparent" />
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/25 via-blue-500/10 to-cyan-500/20 dark:from-blue-500/35 dark:via-blue-500/10 dark:to-cyan-500/25">
+                            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.09)_0%,transparent_40%,rgba(255,255,255,0.03)_100%)]" />
+                            <div className="absolute right-5 top-4 h-20 w-20 rounded-full bg-blue-500/18" />
+                            <div className="absolute left-5 bottom-5 h-16 w-16 rounded-full bg-cyan-400/12" />
+                          </div>
+                        )}
+
+                        <div className="absolute left-5 top-5 rounded-full border border-white/15 bg-black/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white backdrop-blur-md">
+                          0{index + 1}
+                        </div>
+
+                        <div className="absolute bottom-5 left-5 right-5">
+                          <h3 className="line-clamp-2 text-xl font-bold text-white">{module.name}</h3>
+                        </div>
+                      </div>
+
+                      <div className="relative z-10 flex h-[calc(100%-12rem)] flex-col p-5">
+                        <p className="line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                          {module.description?.trim()
+                            ? module.description
+                            : locale === 'hi'
+                              ? 'आपकी वर्तमान पढ़ाई के लिए तैयार अगला स्मार्ट मॉड्यूल।'
+                              : 'A smart next-step module curated for your current learning track.'}
+                        </p>
+
+                        <div className="mt-4 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                          <span className="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-white/[0.05]">
+                            {module.courseCount ?? 0} {locale === 'hi' ? 'कोर्स' : 'courses'}
+                          </span>
+                          <span className="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-white/[0.05]">
+                            {module.lessonCount ?? 0} {locale === 'hi' ? 'लेसन' : 'lessons'}
+                          </span>
+                        </div>
+
+                        <Link
+                          href={`/${locale}/dashboard/modules/${encodeURIComponent(module.id)}`}
+                          className="mt-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-500/20 bg-gradient-to-r from-blue-500 to-cyan-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-all hover:border-blue-400/40"
+                        >
+                          {locale === 'hi' ? 'मॉड्यूल खोलें' : 'Open module'}
+                          <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                          </svg>
+                        </Link>
+                      </div>
+                    </GlassPanel>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.section>
+        </motion.div>
       </main>
     </div>
   );

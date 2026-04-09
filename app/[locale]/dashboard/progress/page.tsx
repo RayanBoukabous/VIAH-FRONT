@@ -207,11 +207,11 @@ export default function ProgressPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen overflow-x-hidden bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <DashboardNavbar />
 
-      <main className="ml-64 pt-72 pb-6 p-4 lg:p-6 relative z-10">
+      <main className="relative z-10 ml-0 min-w-0 w-full px-3 pb-6 pt-[88px] sm:px-4 sm:pt-28 lg:ml-64 lg:w-auto lg:max-w-none lg:p-6 lg:pt-72">
         <div className="max-w-[1600px] mx-auto">
           {/* Header */}
           <div className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700 pt-20">

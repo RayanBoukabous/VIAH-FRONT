@@ -5,22 +5,13 @@ const withNextIntl = createNextIntlPlugin();
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  /** Tree-shake icon imports for smaller client chunks & faster navigations. */
+  experimental: {
+    optimizePackageImports: ['@mui/icons-material', '@mui/material'],
+  },
   /** Avoid stale / missing vendor chunks for next-intl → @formatjs in dev (delete `.next` if error persists). */
   transpilePackages: ['next-intl'],
-  /**
-   * Proxy API on the same origin as the Next app so Set-Cookie from login applies to localhost
-   * (avoids cross-origin cookie loss with fetch credentials). Configure real backend with API_UPSTREAM.
-   */
-  async rewrites() {
-    const upstream = process.env.API_UPSTREAM ?? 'https://viah.aidaki.ai';
-    const base = upstream.replace(/\/+$/, '');
-    return [
-      {
-        source: '/api/v1/:path*',
-        destination: `${base}/api/v1/:path*`,
-      },
-    ];
-  },
+  /** API: see `app/api/v1/[...path]/route.ts` — forwards cookies to API_UPSTREAM. */
   images: {
     remotePatterns: [
       {
@@ -30,6 +21,22 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'viah.aidaki.ai',
+      },
+      {
+        protocol: 'https',
+        hostname: 's3.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.s3.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.s3.*.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
       },
     ],
   },
