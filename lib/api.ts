@@ -2,7 +2,7 @@
  * API client. Auth uses HTTP-only cookies (session + refresh).
  *
  * In the browser, requests go to same-origin `/api/v1`, proxied by `app/api/v1/[...path]/route.ts`
- * to API_UPSTREAM with `Cookie` forwarded (required for POST /auth/refresh with HttpOnly tokens).
+ * to `API_UPSTREAM` (or `NEXT_PUBLIC_API_URL` if unset) with `Cookie` forwarded.
  *
  * For server-side fetch, set NEXT_PUBLIC_APP_URL to your app origin (e.g. http://localhost:3003).
  */

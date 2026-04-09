@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const UPSTREAM = (process.env.API_UPSTREAM ?? 'https://viah.aidaki.ai').replace(/\/+$/, '');
+const UPSTREAM = (process.env.API_UPSTREAM ?? process.env.NEXT_PUBLIC_API_URL ?? 'https://viah.aidaki.ai').replace(
+  /\/+$/,
+  ''
+);
 
 /** Do not forward hop-by-hop / connection headers to the upstream API. */
 const DROP_REQUEST_HEADERS = new Set([
