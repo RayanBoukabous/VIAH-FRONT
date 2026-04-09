@@ -48,19 +48,14 @@ export default function LandingHero() {
   return (
     <section
       id="home"
-      className="relative overflow-x-hidden px-4 pb-24 pt-32 sm:px-6 lg:px-10 lg:pb-28 lg:pt-36"
+      className="relative overflow-x-hidden px-4 pb-20 pt-28 sm:px-5 sm:pb-24 sm:pt-32 lg:px-8 lg:pb-28 lg:pt-32 xl:px-10 xl:pt-36"
     >
       {/* Background logo — contained in section, no overflow scroll */}
       <div
         className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden"
         aria-hidden
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.92 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          className="relative flex h-full w-full max-w-[min(92vw,880px)] items-center justify-center px-2"
-        >
+        <div className="relative flex h-full w-full max-w-[min(92vw,880px)] items-center justify-center px-2">
           <Image
             src="/assets/logo/logo_viah.png"
             alt=""
@@ -70,26 +65,21 @@ export default function LandingHero() {
             className="h-auto w-full max-h-[min(52vh,560px)] object-contain object-center opacity-[0.07] saturate-110 contrast-105 dark:opacity-[0.14] dark:saturate-125"
             priority
           />
-        </motion.div>
+        </div>
         <div
           className="absolute left-1/2 top-1/2 h-[min(85vw,720px)] w-[min(85vw,720px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/[0.045] blur-3xl dark:bg-blue-500/[0.09]"
           aria-hidden
         />
       </div>
 
-      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] items-center gap-16 overflow-visible lg:grid-cols-[1.15fr_0.85fr]">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-20"
-        >
+      <div className="relative z-10 mx-auto grid w-full max-w-[min(100%,1320px)] items-center gap-12 overflow-visible lg:gap-14 xl:grid-cols-[1.12fr_0.88fr] xl:gap-16 2xl:max-w-[1600px]">
+        <div className="relative z-20">
           <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-blue-200/80 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-700 backdrop-blur-xl dark:border-blue-400/15 dark:bg-white/[0.04] dark:text-blue-200">
             <span className="h-2 w-2 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400" />
             {locale === 'hi' ? 'AI-पावर्ड लर्निंग सिस्टम' : 'AI-powered learning system'}
           </div>
 
-          <h1 className="max-w-4xl text-5xl font-black leading-[0.95] tracking-tight text-slate-950 dark:text-white sm:text-6xl lg:text-7xl xl:text-[88px]">
+          <h1 className="max-w-4xl text-4xl font-black leading-[0.98] tracking-tight text-slate-950 dark:text-white sm:text-5xl md:text-6xl lg:text-[clamp(2.5rem,4.2vw,3.75rem)] xl:text-[clamp(2.85rem,4.5vw,4.5rem)] 2xl:text-[clamp(3.25rem,5vw,5.5rem)]">
             <span>{locale === 'hi' ? 'स्मार्ट सीखो।' : 'Learn Smarter.'}</span>
             <br />
             <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-300 bg-clip-text text-transparent">
@@ -129,17 +119,12 @@ export default function LandingHero() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-20 mx-auto w-full max-w-[1100px] px-1 sm:px-3"
-        >
+        <div className="relative z-20 mx-auto w-full max-w-[1100px] px-1 sm:px-3">
           {/* Aperçu dashboard (cliquable) à gauche — petites cartes à droite, mêmes données mock que /dashboard */}
-          <div className="flex flex-col items-stretch gap-8 xl:flex-row xl:items-start xl:justify-center xl:gap-6 2xl:gap-8">
-            <div className="order-1 min-w-0 w-full flex-1 xl:max-w-[min(100%,500px)]">
+          <div className="flex flex-col items-stretch gap-6 lg:gap-8 xl:flex-row xl:items-start xl:justify-center xl:gap-5 2xl:gap-8">
+            <div className="order-1 min-w-0 w-full flex-1 xl:max-w-[min(100%,min(500px,48vw))]">
               <LandingHeroInteractiveDemo />
             </div>
 
@@ -196,7 +181,7 @@ export default function LandingHero() {
               </HeroFloatCard>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

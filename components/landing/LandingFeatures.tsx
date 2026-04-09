@@ -52,15 +52,9 @@ export default function LandingFeatures() {
   const locale = useLocale();
 
   return (
-    <section id="features" className="px-4 py-24 sm:px-6 lg:px-10">
-      <div className="mx-auto w-full max-w-[1600px]">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.7 }}
-          className="mx-auto mb-14 max-w-3xl text-center"
-        >
+    <section id="features" className="px-4 py-20 sm:px-5 sm:py-24 lg:px-8 xl:px-10">
+      <div className="mx-auto w-full max-w-[min(100%,1320px)] 2xl:max-w-[1600px]">
+        <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-14">
           <div className="mb-4 inline-flex rounded-full border border-blue-200/80 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-700 backdrop-blur-xl dark:border-blue-400/15 dark:bg-white/[0.03] dark:text-blue-200">
             {locale === 'hi' ? 'फीचर्स' : 'Features'}
           </div>
@@ -72,18 +66,16 @@ export default function LandingFeatures() {
               ? 'हर सेक्शन को इस तरह डिजाइन किया गया है कि छात्र प्रेरित रहें, तेज सीखें और लगातार प्रगति करें।'
               : 'Every part of the experience is designed to keep students motivated, moving faster, and learning with confidence.'}
           </p>
-        </motion.div>
+        </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {items.map((item, index) => (
+        <div className="grid gap-5 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {items.map((item) => (
             <motion.div
               key={item.en}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-70px' }}
-              transition={{ duration: 0.55, delay: index * 0.08 }}
-              whileHover={{ y: -8, scale: 1.015 }}
-              className="group relative overflow-hidden rounded-[28px] border border-slate-200 bg-white/80 p-6 backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/30 hover:shadow-[0_18px_50px_-24px_rgba(59,130,246,0.20)] dark:border-white/8 dark:bg-white/[0.04] dark:hover:border-cyan-400/22 dark:hover:shadow-[0_18px_50px_-24px_rgba(59,130,246,0.55)]"
+              initial={false}
+              whileHover={{ y: -6, scale: 1.012 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+              className="group relative overflow-hidden rounded-[28px] border border-slate-200 bg-white/80 p-6 backdrop-blur-xl transition-shadow duration-300 hover:border-cyan-400/30 hover:shadow-[0_18px_50px_-24px_rgba(59,130,246,0.20)] dark:border-white/8 dark:bg-white/[0.04] dark:hover:border-cyan-400/22 dark:hover:shadow-[0_18px_50px_-24px_rgba(59,130,246,0.55)]"
             >
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.14),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.12),transparent_26%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               <div className="relative z-10">

@@ -40,15 +40,9 @@ export default function LandingModulesShowcase() {
   const locale = useLocale();
 
   return (
-    <section id="modules" className="px-4 py-24 sm:px-6 lg:px-10 scroll-mt-24">
-      <div className="mx-auto w-full max-w-[1600px]">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.7 }}
-          className="mb-14 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"
-        >
+    <section id="modules" className="scroll-mt-24 px-4 py-20 sm:px-5 sm:py-24 lg:px-8 xl:px-10">
+      <div className="mx-auto w-full max-w-[min(100%,1320px)] 2xl:max-w-[1600px]">
+        <div className="mb-12 flex flex-col gap-5 lg:mb-14 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <div className="mb-4 inline-flex rounded-full border border-indigo-200/80 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-indigo-700 backdrop-blur-xl dark:border-indigo-400/15 dark:bg-white/[0.03] dark:text-indigo-200">
               {locale === 'hi' ? 'मॉड्यूल' : 'Modules'}
@@ -70,18 +64,16 @@ export default function LandingModulesShowcase() {
           >
             {locale === 'hi' ? 'मॉड्यूल देखें' : 'Browse modules'}
           </Link>
-        </motion.div>
+        </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {modules.map((mod, index) => (
+        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
+          {modules.map((mod) => (
             <motion.article
               key={mod.titleEn}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-70px' }}
-              transition={{ duration: 0.55, delay: index * 0.06 }}
-              whileHover={{ y: -6 }}
-              className="group overflow-hidden rounded-[28px] border border-slate-200 bg-white/80 backdrop-blur-xl transition-all duration-300 hover:border-indigo-400/30 hover:shadow-[0_18px_50px_-24px_rgba(99,102,241,0.2)] dark:border-white/8 dark:bg-white/[0.04] dark:hover:border-indigo-400/22"
+              initial={false}
+              whileHover={{ y: -5 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+              className="group overflow-hidden rounded-[28px] border border-slate-200 bg-white/80 backdrop-blur-xl transition-shadow duration-300 hover:border-indigo-400/30 hover:shadow-[0_18px_50px_-24px_rgba(99,102,241,0.2)] dark:border-white/8 dark:bg-white/[0.04] dark:hover:border-indigo-400/22"
             >
               <div className="relative aspect-[16/10] overflow-hidden">
                 <Image

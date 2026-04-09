@@ -36,32 +36,24 @@ export default function LandingPricing() {
   const locale = useLocale();
 
   return (
-    <section id="pricing" className="px-4 py-24 sm:px-6 lg:px-10">
-      <div className="mx-auto w-full max-w-[1600px]">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="mx-auto mb-14 max-w-3xl text-center"
-        >
+    <section id="pricing" className="px-4 py-20 sm:px-5 sm:py-24 lg:px-8 xl:px-10">
+      <div className="mx-auto w-full max-w-[min(100%,1320px)] 2xl:max-w-[1600px]">
+        <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-14">
           <div className="mb-4 inline-flex rounded-full border border-blue-200/80 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-700 backdrop-blur-xl dark:border-blue-400/15 dark:bg-white/[0.03] dark:text-blue-200">
             {locale === 'hi' ? 'प्राइसिंग' : 'Pricing'}
           </div>
           <h2 className="text-4xl font-black tracking-tight text-slate-950 dark:text-white sm:text-5xl">
             {locale === 'hi' ? 'हर स्तर के छात्र के लिए लचीली योजना' : 'Flexible plans for every level of ambition'}
           </h2>
-        </motion.div>
+        </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {plans.map((plan, index) => (
+        <div className="grid gap-5 sm:gap-6 lg:grid-cols-3">
+          {plans.map((plan) => (
             <motion.div
               key={plan.nameEn}
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.55, delay: index * 0.08 }}
-              whileHover={{ y: -8, scale: 1.015 }}
+              initial={false}
+              whileHover={{ y: -5, scale: 1.01 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
               className={`relative overflow-hidden rounded-[30px] border p-[1px] ${
                 plan.featured ? 'border-cyan-400/40' : 'border-slate-200 dark:border-white/8'
               }`}

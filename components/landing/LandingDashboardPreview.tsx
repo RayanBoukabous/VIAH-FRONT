@@ -2,7 +2,6 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 /** Aligné sur les constantes mock de `app/[locale]/dashboard/page.tsx` */
@@ -64,7 +63,7 @@ function MiniProgressRing({ value, size = 88 }: { value: number; size?: number }
           </linearGradient>
         </defs>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth={stroke} className="text-slate-200/80 dark:text-white/[0.06]" />
-        <motion.circle
+        <circle
           cx={size / 2}
           cy={size / 2}
           r={r}
@@ -73,9 +72,7 @@ function MiniProgressRing({ value, size = 88 }: { value: number; size?: number }
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
-          initial={{ strokeDashoffset: c }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          strokeDashoffset={offset}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -185,11 +182,9 @@ export function LandingDashboardPreviewInner({ locale, showFooterCta = true }: I
               {hi ? 'साप्ताहिक लक्ष्य' : 'Weekly goal'}
             </p>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-white/[0.08]">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"
-                initial={{ width: 0 }}
-                animate={{ width: `${m.weeklyGoal}%` }}
-                transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-none"
+                style={{ width: `${m.weeklyGoal}%` }}
               />
             </div>
             <p className="mt-2 text-lg font-black text-slate-950 dark:text-white">{m.weeklyGoal}%</p>

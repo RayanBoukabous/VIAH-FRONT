@@ -1,7 +1,6 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {
@@ -24,10 +23,10 @@ function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {
   }, [to]);
 
   return (
-    <motion.span>
+    <span>
       {value}
       {suffix}
-    </motion.span>
+    </span>
   );
 }
 
@@ -41,15 +40,9 @@ export default function LandingStats() {
   ];
 
   return (
-    <section className="px-4 py-10 sm:px-6 lg:px-10">
-      <div className="mx-auto grid w-full max-w-[1600px] gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.65 }}
-          className="rounded-[30px] border border-slate-200 bg-white/80 p-7 backdrop-blur-xl dark:border-white/8 dark:bg-white/[0.04]"
-        >
+    <section className="px-4 py-10 sm:px-5 lg:px-8 xl:px-10">
+      <div className="mx-auto grid w-full max-w-[min(100%,1320px)] gap-4 lg:grid-cols-[1.1fr_0.9fr] 2xl:max-w-[1600px]">
+        <div className="rounded-[30px] border border-slate-200 bg-white/80 p-6 backdrop-blur-xl sm:p-7 dark:border-white/8 dark:bg-white/[0.04]">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-700 dark:text-blue-200">
             {locale === 'hi' ? 'विश्वास' : 'Trusted at scale'}
           </p>
@@ -61,23 +54,19 @@ export default function LandingStats() {
               ? 'हमारी AI-फर्स्ट लर्निंग प्रणाली छात्रों को सिर्फ पढ़ने नहीं, बल्कि लगातार बेहतर होने में मदद करती है।'
               : 'Our AI-first learning experience helps students do more than study. It helps them improve with rhythm, confidence, and measurable momentum.'}
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
-          {stats.map((stat, index) => (
-            <motion.div
+          {stats.map((stat) => (
+            <div
               key={stat.label}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.55, delay: index * 0.08 }}
               className="rounded-[26px] border border-slate-200 bg-white/80 p-6 backdrop-blur-xl dark:border-white/8 dark:bg-white/[0.04]"
             >
               <div className="text-4xl font-black text-slate-950 dark:text-white">
                 <CountUp to={stat.to} suffix={stat.suffix} />
               </div>
               <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">{stat.label}</div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

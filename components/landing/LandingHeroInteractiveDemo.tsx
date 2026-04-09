@@ -219,9 +219,9 @@ export default function LandingHeroInteractiveDemo() {
               <motion.aside
                 key="hero-demo-sidebar"
                 id="hero-demo-sidebar"
-                initial={{ x: -12, opacity: 0 }}
+                initial={{ x: -12, opacity: 1 }}
                 animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -12, opacity: 0 }}
+                exit={{ x: -12, opacity: 1 }}
                 transition={{ type: 'spring', damping: 30, stiffness: 380 }}
                 className="absolute left-0 top-0 z-30 h-full w-44 shrink-0 overflow-hidden rounded-br-3xl border-slate-200/70 shadow-lg shadow-slate-900/10 dark:border-white/[0.06] dark:shadow-black/40 sm:relative sm:left-auto sm:top-auto sm:z-0 sm:h-auto sm:rounded-none sm:shadow-none sm:border-r"
               >
@@ -297,29 +297,14 @@ export default function LandingHeroInteractiveDemo() {
             }`}
           >
             <GlassPanel className="relative min-h-full rounded-none border-0 bg-transparent p-3 shadow-none sm:p-4">
-              <AnimatePresence mode="wait">
-                {route === 'dashboard' && (
-                  <motion.div
-                    key="dash"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                    className="relative h-full"
-                  >
-                    <LandingDashboardPreviewInner locale={locale} showFooterCta={false} />
-                  </motion.div>
-                )}
+              {route === 'dashboard' ? (
+                <div key="dash" className="relative h-full">
+                  <LandingDashboardPreviewInner locale={locale} showFooterCta={false} />
+                </div>
+              ) : null}
 
-                {route === 'modules' && (
-                  <motion.div
-                    key="mod"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                    className="space-y-3"
-                  >
+              {route === 'modules' ? (
+                  <div key="mod" className="space-y-3">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       {hi ? 'मॉड्यूल (डेमो)' : 'Modules (demo)'}
                     </p>
@@ -339,18 +324,11 @@ export default function LandingHeroInteractiveDemo() {
                         </div>
                       </div>
                     ))}
-                  </motion.div>
-                )}
+                  </div>
+              ) : null}
 
-                {route === 'courses' && (
-                  <motion.div
-                    key="crs"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                    className="space-y-3"
-                  >
+              {route === 'courses' ? (
+                  <div key="crs" className="space-y-3">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       {hi ? 'पाठ्यक्रम (डेमो)' : 'Courses (demo)'}
                     </p>
@@ -372,52 +350,45 @@ export default function LandingHeroInteractiveDemo() {
                         </button>
                       </div>
                     ))}
-                  </motion.div>
-                )}
+                  </div>
+              ) : null}
 
-                {route === 'terms' && (
-                  <motion.div key="trm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+              {route === 'terms' ? (
+                  <div key="trm" className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{hi ? 'टर्म' : 'Terms'}</p>
                     <ul className="list-inside list-disc space-y-1 text-[12px]">
                       <li>{hi ? 'टर्म 1 — पूर्ण' : 'Term 1 — complete'}</li>
                       <li>{hi ? 'टर्म 2 — चालू' : 'Term 2 — in progress'}</li>
                     </ul>
-                  </motion.div>
-                )}
+                  </div>
+              ) : null}
 
-                {route === 'progress' && (
-                  <motion.div key="prg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
+              {route === 'progress' ? (
+                  <div key="prg" className="space-y-2">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{hi ? 'प्रगति' : 'Progress'}</p>
                     <div className="h-2 rounded-full bg-slate-200 dark:bg-white/[0.08]">
                       <div className="h-2 w-[41%] rounded-full bg-gradient-to-r from-blue-500 to-cyan-400" />
                     </div>
                     <p className="text-xs text-slate-600 dark:text-slate-400">41% {hi ? 'कुल' : 'overall'}</p>
-                  </motion.div>
-                )}
+                  </div>
+              ) : null}
 
-                {route === 'trimesters' && (
-                  <motion.div key="tri" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-sm text-slate-600 dark:text-slate-300">
+              {route === 'trimesters' ? (
+                  <div key="tri" className="text-sm text-slate-600 dark:text-slate-300">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{hi ? 'कैलेंडर' : 'Calendar'}</p>
                     <p className="mt-2 text-[12px]">{hi ? 'ट्राइमेस्टर 2 शुरू होने वाला है।' : 'Trimester 2 starts soon.'}</p>
-                  </motion.div>
-                )}
+                  </div>
+              ) : null}
 
-                {route === 'settings' && (
-                  <motion.div key="set" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-sm text-slate-600 dark:text-slate-300">
+              {route === 'settings' ? (
+                  <div key="set" className="text-sm text-slate-600 dark:text-slate-300">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{hi ? 'प्रोफ़ाइल' : 'Profile'}</p>
                     <p className="mt-2 text-[12px]">{hi ? 'डेमो — सेटिंग्स यहाँ दिखती हैं।' : 'Demo — settings appear here.'}</p>
-                  </motion.div>
-                )}
+                  </div>
+              ) : null}
 
-                {route === 'course-detail' && (
-                  <motion.div
-                    key="cd"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className="space-y-4"
-                  >
+              {route === 'course-detail' ? (
+                  <div key="cd" className="space-y-4">
                     <button
                       type="button"
                       onClick={() => go('courses')}
@@ -463,9 +434,8 @@ export default function LandingHeroInteractiveDemo() {
                         </Link>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  </div>
+              ) : null}
             </GlassPanel>
 
             <div className="relative z-10 border-t border-slate-200/60 bg-gradient-to-t from-white/95 to-white/70 px-3 py-2.5 backdrop-blur-md dark:border-white/[0.06] dark:from-[#0c1220]/95 dark:to-[#0c1220]/70">

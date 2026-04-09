@@ -1,20 +1,13 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { motion } from 'framer-motion';
-
 export default function LandingExperience() {
   const locale = useLocale();
 
   return (
-    <section className="px-4 py-24 sm:px-6 lg:px-10">
-      <div className="mx-auto grid w-full max-w-[1600px] items-center gap-14 lg:grid-cols-[0.9fr_1.1fr]">
-        <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.7 }}
-        >
+    <section className="px-4 py-20 sm:px-5 sm:py-24 lg:px-8 xl:px-10">
+      <div className="mx-auto grid w-full max-w-[min(100%,1320px)] items-center gap-10 lg:gap-12 xl:grid-cols-[0.9fr_1.1fr] xl:gap-14 2xl:max-w-[1600px]">
+        <div>
           <div className="mb-4 inline-flex rounded-full border border-blue-200/80 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-700 backdrop-blur-xl dark:border-blue-400/15 dark:bg-white/[0.03] dark:text-blue-200">
             {locale === 'hi' ? 'एक्सपीरियंस' : 'Experience'}
           </div>
@@ -38,15 +31,9 @@ export default function LandingExperience() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.75, delay: 0.08 }}
-          className="relative"
-        >
+        <div className="relative">
           <div className="absolute -left-10 top-10 h-40 w-40 rounded-full bg-blue-500/18 blur-[90px]" />
           <div className="absolute -right-8 bottom-10 h-40 w-40 rounded-full bg-cyan-500/14 blur-[90px]" />
           <div className="relative rounded-[34px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.88))] p-4 backdrop-blur-2xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))]">
@@ -108,7 +95,7 @@ export default function LandingExperience() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

@@ -15,15 +15,9 @@ export default function LandingCoursesPreview() {
   const locale = useLocale();
 
   return (
-    <section id="courses" className="px-4 py-24 sm:px-6 lg:px-10">
-      <div className="mx-auto w-full max-w-[1600px]">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.7 }}
-          className="mb-14 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"
-        >
+    <section id="courses" className="px-4 py-20 sm:px-5 sm:py-24 lg:px-8 xl:px-10">
+      <div className="mx-auto w-full max-w-[min(100%,1320px)] 2xl:max-w-[1600px]">
+        <div className="mb-12 flex flex-col gap-5 lg:mb-14 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <div className="mb-4 inline-flex rounded-full border border-blue-200/80 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-700 backdrop-blur-xl dark:border-blue-400/15 dark:bg-white/[0.03] dark:text-blue-200">
               {locale === 'hi' ? 'कोर्स प्रीव्यू' : 'Courses preview'}
@@ -38,18 +32,16 @@ export default function LandingCoursesPreview() {
           >
             {locale === 'hi' ? 'सभी कोर्स देखें' : 'View all courses'}
           </Link>
-        </motion.div>
+        </div>
 
-        <div className="grid gap-6 lg:grid-cols-4">
-          {courses.map((course, index) => (
+        <div className="grid gap-5 sm:gap-6 lg:grid-cols-2 xl:grid-cols-4">
+          {courses.map((course) => (
             <motion.div
               key={course.titleEn}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-70px' }}
-              transition={{ duration: 0.55, delay: index * 0.08 }}
-              whileHover={{ y: -8, scale: 1.02 }}
-              className="group overflow-hidden rounded-[28px] border border-slate-200 bg-white/80 backdrop-blur-xl transition-all duration-300 hover:border-blue-400/30 hover:shadow-[0_18px_50px_-24px_rgba(59,130,246,0.18)] dark:border-white/8 dark:bg-white/[0.04] dark:hover:border-blue-400/22 dark:hover:shadow-[0_18px_50px_-24px_rgba(59,130,246,0.55)]"
+              initial={false}
+              whileHover={{ y: -6, scale: 1.015 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+              className="group overflow-hidden rounded-[28px] border border-slate-200 bg-white/80 backdrop-blur-xl transition-shadow duration-300 hover:border-blue-400/30 hover:shadow-[0_18px_50px_-24px_rgba(59,130,246,0.18)] dark:border-white/8 dark:bg-white/[0.04] dark:hover:border-blue-400/22 dark:hover:shadow-[0_18px_50px_-24px_rgba(59,130,246,0.55)]"
             >
               <div className={`relative h-52 bg-gradient-to-br ${course.accent}`}>
                 <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.18),transparent_42%,rgba(0,0,0,0.18))]" />
