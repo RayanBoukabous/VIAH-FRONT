@@ -21,8 +21,78 @@ import { findCbseCurriculum, getLevelTierFromName, type SignupLevelTier } from '
 import PsychologyOutlined from '@mui/icons-material/PsychologyOutlined';
 import PublicOutlined from '@mui/icons-material/PublicOutlined';
 import InsightsOutlined from '@mui/icons-material/InsightsOutlined';
+import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 
 const STEPS = 3;
+
+type CatalogSelectProps = {
+  id: string;
+  label: string;
+  value: string;
+  onValueChange: (v: string) => void;
+  disabled?: boolean;
+  loading?: boolean;
+  placeholder: string;
+  loadingLabel: string;
+  options: { value: string; label: string }[];
+  required?: boolean;
+};
+
+function CatalogSelect({
+  id,
+  label,
+  value,
+  onValueChange,
+  disabled,
+  loading,
+  placeholder,
+  loadingLabel,
+  options,
+  required,
+}: CatalogSelectProps) {
+  const selectStyles =
+    'w-full rounded-xl border bg-white/95 dark:bg-slate-950/85 px-4 py-3.5 pr-12 text-sm text-slate-900 dark:text-slate-100 ' +
+    'shadow-[0_1px_2px_rgba(15,23,42,0.06)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.35)] transition-all duration-200 appearance-none cursor-pointer ' +
+    'border-slate-200/95 dark:border-white/[0.14] ' +
+    'hover:border-slate-300 dark:hover:border-white/22 hover:bg-white dark:hover:bg-slate-950/90 ' +
+    'focus:outline-none focus:ring-2 focus:ring-blue-500/35 focus:border-blue-400/55 dark:focus:ring-cyan-500/38 dark:focus:border-cyan-500/40 ' +
+    'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-slate-200 dark:disabled:hover:border-white/[0.14] ' +
+    '[&>option]:bg-white [&>option]:py-1.5 [&>option]:dark:bg-slate-900';
+
+  return (
+    <div className="space-y-2">
+      <label
+        htmlFor={id}
+        className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+      >
+        {label}
+      </label>
+      <div className="group relative">
+        <select
+          id={id}
+          required={required}
+          value={value}
+          onChange={(e) => onValueChange(e.target.value)}
+          disabled={disabled || loading}
+          className={selectStyles}
+        >
+          <option value="">{loading ? loadingLabel : placeholder}</option>
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+          <KeyboardArrowDown
+            className="text-slate-400 transition-transform duration-200 group-hover:text-slate-500 dark:text-slate-500 dark:group-hover:text-slate-400"
+            sx={{ fontSize: 22 }}
+          />
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function SignupPage() {
   const t = useTranslations('signup');
@@ -49,6 +119,7 @@ export default function SignupPage() {
   const [curriculums, setCurriculums] = useState<Curriculum[]>([]);
   const [specialities, setSpecialities] = useState<Speciality[]>([]);
   const [levelsLoading, setLevelsLoading] = useState(true);
+  const [curriculumsLoading, setCurriculumsLoading] = useState(false);
   const [specialitiesLoading, setSpecialitiesLoading] = useState(false);
   const [catalogError, setCatalogError] = useState(false);
 
@@ -123,15 +194,11 @@ export default function SignupPage() {
       setLevelsLoading(true);
       setCatalogError(false);
       try {
-        const [levelList, currList] = await Promise.all([getLevels(), getCurriculums()]);
-        if (!cancelled) {
-          setLevels(levelList);
-          setCurriculums(currList);
-        }
+        const levelList = await getLevels();
+        if (!cancelled) setLevels(levelList);
       } catch {
         if (!cancelled) {
           setLevels([]);
-          setCurriculums([]);
           setCatalogError(true);
         }
       } finally {
@@ -142,6 +209,34 @@ export default function SignupPage() {
       cancelled = true;
     };
   }, []);
+
+  /** Curriculums uniquement après choix du niveau (CBSE auto K–8, liste sinon). */
+  useEffect(() => {
+    if (!levelId) {
+      setCurriculums([]);
+      setCurriculumsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setCurriculums([]);
+      setCurriculumsLoading(true);
+      try {
+        const list = await getCurriculums();
+        if (!cancelled) setCurriculums(list);
+      } catch {
+        if (!cancelled) {
+          setCurriculums([]);
+          setCatalogError(true);
+        }
+      } finally {
+        if (!cancelled) setCurriculumsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [levelId]);
 
   const selectedLevel = useMemo(() => levels.find((l) => l.id === levelId), [levels, levelId]);
   const tier: SignupLevelTier = useMemo(
@@ -165,6 +260,7 @@ export default function SignupPage() {
     else setCurriculumId('');
   }, [levelId, selectedLevel, curriculums]);
 
+  /** Spécialités uniquement pour 11–12, une fois niveau + curriculum connus. */
   useEffect(() => {
     if (!levelId) {
       setSpecialities([]);
@@ -176,13 +272,18 @@ export default function SignupPage() {
       setSpecialityId('');
       return;
     }
+    if (!curriculumId.trim()) {
+      setSpecialities([]);
+      setSpecialityId('');
+      return;
+    }
 
     let cancelled = false;
     (async () => {
       setSpecialitiesLoading(true);
       setSpecialityId('');
       try {
-        const list = await getSpecialities();
+        const list = await getSpecialities(levelId, curriculumId);
         if (!cancelled) setSpecialities(list);
       } catch {
         if (!cancelled) {
@@ -196,7 +297,7 @@ export default function SignupPage() {
     return () => {
       cancelled = true;
     };
-  }, [levelId, tier]);
+  }, [levelId, tier, curriculumId]);
 
   const filteredSpecialities = useMemo(() => {
     if (!levelId || !curriculumId) return [];
@@ -214,7 +315,6 @@ export default function SignupPage() {
 
   const inputClass =
     'block w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-primary/40 dark:focus:border-cyan-500/35 focus:bg-white dark:focus:bg-white/[0.06] transition-all shadow-sm dark:shadow-none';
-  const selectClass = `${inputClass} appearance-none cursor-pointer disabled:opacity-50`;
 
   const canGoStep2 = email.trim() && username.trim() && password.length >= 1;
   const canGoStep3 = firstName.trim() && lastName.trim() && age >= 1 && age <= 120;
@@ -235,6 +335,7 @@ export default function SignupPage() {
     (!g1112NeedsSpecialityPick || !!specialityId) &&
     !g1112Blocked &&
     !levelsLoading &&
+    !curriculumsLoading &&
     !(tier === 'g1112' && specialitiesLoading) &&
     !k8CbseMissing;
 
@@ -641,87 +742,61 @@ export default function SignupPage() {
                         transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
                         className="space-y-4"
                       >
+                        <CatalogSelect
+                          id="levelId"
+                          label={t('level')}
+                          value={levelId}
+                          onValueChange={setLevelId}
+                          loading={levelsLoading}
+                          placeholder={t('selectLevel')}
+                          loadingLabel={t('loadingOptions')}
+                          options={levels.map((l) => ({ value: l.id, label: l.name }))}
+                          required
+                        />
                         <div>
-                          <label htmlFor="levelId" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
-                            {t('level')}
-                          </label>
-                          <select
-                            id="levelId"
-                            required
-                            value={levelId}
-                            onChange={(e) => setLevelId(e.target.value)}
-                            disabled={levelsLoading}
-                            className={selectClass}
-                          >
-                            <option value="">{levelsLoading ? t('loadingOptions') : t('selectLevel')}</option>
-                            {levels.map((l) => (
-                              <option key={l.id} value={l.id}>
-                                {l.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label htmlFor="curriculumId" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
-                            {tier === 'k8' ? t('curriculumLocked') : t('curriculum')}
-                          </label>
-                          <select
+                          <CatalogSelect
                             id="curriculumId"
-                            required
+                            label={tier === 'k8' ? t('curriculumLocked') : t('curriculum')}
                             value={curriculumId}
-                            onChange={(e) => setCurriculumId(e.target.value)}
-                            disabled={levelsLoading || tier === 'k8'}
-                            className={selectClass}
-                          >
-                            {tier === 'k8' ? (
-                              cbseCurriculum ? (
-                                <option value={cbseCurriculum.id}>{cbseCurriculum.name}</option>
-                              ) : (
-                                <option value="">{levelsLoading ? t('loadingOptions') : t('selectCurriculum')}</option>
-                              )
-                            ) : (
-                              <>
-                                <option value="">{levelsLoading ? t('loadingOptions') : t('selectCurriculum')}</option>
-                                {curriculums.map((c) => (
-                                  <option key={c.id} value={c.id}>
-                                    {c.name}
-                                  </option>
-                                ))}
-                              </>
-                            )}
-                          </select>
+                            onValueChange={setCurriculumId}
+                            disabled={!levelId || tier === 'k8'}
+                            loading={curriculumsLoading}
+                            placeholder={t('selectCurriculum')}
+                            loadingLabel={t('loadingOptions')}
+                            options={
+                              tier === 'k8' && cbseCurriculum
+                                ? [{ value: cbseCurriculum.id, label: cbseCurriculum.name }]
+                                : curriculums.map((c) => ({ value: c.id, label: c.name }))
+                            }
+                            required
+                          />
                           {k8CbseMissing && (
                             <p className="mt-2 text-sm text-rose-600 dark:text-rose-300">{t('cbseMissing')}</p>
                           )}
                         </div>
                         {tier === 'g1112' && (
                           <div>
-                            <label htmlFor="specialityId" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
-                              {t('speciality')}
-                            </label>
-                            <select
+                            <CatalogSelect
                               id="specialityId"
-                              required={filteredSpecialities.length > 0}
+                              label={t('speciality')}
                               value={specialityId}
-                              onChange={(e) => setSpecialityId(e.target.value)}
-                              disabled={!levelId || !curriculumId || specialitiesLoading}
-                              className={selectClass}
-                            >
-                              <option value="">
-                                {!levelId
+                              onValueChange={setSpecialityId}
+                              disabled={!levelId || !curriculumId}
+                              loading={specialitiesLoading}
+                              placeholder={
+                                !levelId
                                   ? t('selectLevel')
                                   : !curriculumId
                                     ? t('pickCurriculumFirst')
-                                    : specialitiesLoading
-                                      ? t('loadingOptions')
-                                      : t('selectSpeciality')}
-                              </option>
-                              {filteredSpecialities.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                  {s.description?.trim() ? s.description : s.name}
-                                </option>
-                              ))}
-                            </select>
+                                    : t('selectSpeciality')
+                              }
+                              loadingLabel={t('loadingOptions')}
+                              options={filteredSpecialities.map((s) => ({
+                                value: s.id,
+                                label: s.description?.trim() ? s.description : s.name,
+                              }))}
+                              required={filteredSpecialities.length > 0}
+                            />
                             {g1112Blocked && (
                               <p className="mt-2 text-sm text-amber-700 dark:text-amber-200/90">{t('specialityNoMatch')}</p>
                             )}

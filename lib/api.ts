@@ -317,6 +317,21 @@ export async function refreshSession(): Promise<void> {
   }
 }
 
+/**
+ * Student registration — POST vers l’API d’auth (pas la page Next `/signup`).
+ *
+ * **URL (navigateur)** — même origine que l’app Next (ex. dev sur le port 3003) :
+ * `POST /api/v1/auth/signup` → absolu `http://localhost:3003/api/v1/auth/signup`.
+ * Le handler `app/api/v1/[...path]/route.ts` relaie vers `API_UPSTREAM` (ou `NEXT_PUBLIC_API_URL`)
+ * en `POST {UPSTREAM}/api/v1/auth/signup` en repassant le corps et les en-têtes (sauf hop-by-hop).
+ *
+ * **Headers** : `Content-Type: application/json`, `Accept: application/json`.
+ * **credentials: 'include'** : envoie les cookies existants et permet au navigateur de stocker
+ * les `Set-Cookie` HttpOnly renvoyés par le backend (session après inscription).
+ *
+ * **Corps JSON** : voir {@link SignupBody} — email, username, firstName, lastName, password,
+ * et `studentData` (age, levelId, curriculumId, specialityId optionnel pour certains niveaux).
+ */
 export async function signup(body: SignupBody): Promise<void> {
   const res = await fetch(apiUrl('/auth/signup'), {
     method: 'POST',
@@ -357,14 +372,42 @@ export type Speciality = {
   curriculumId?: string;
 };
 
-function normalizeJsonArray<T>(raw: unknown): unknown[] {
+/**
+ * Unwraps common API envelope shapes (OData `value`, paginated `data`/`items`, domain keys, nested `data`).
+ */
+function normalizeJsonArray(raw: unknown, depth = 0): unknown[] {
   if (Array.isArray(raw)) return raw;
-  if (raw && typeof raw === 'object' && 'data' in raw && Array.isArray((raw as { data: unknown }).data)) {
-    return (raw as { data: unknown[] }).data;
+  if (!raw || typeof raw !== 'object' || depth > 4) return [];
+
+  const o = raw as Record<string, unknown>;
+  const keys = [
+    'value',
+    'data',
+    'items',
+    'results',
+    'curriculums',
+    'curriculum',
+    'levels',
+    'level',
+    'specialities',
+    'speciality',
+  ] as const;
+
+  for (const k of keys) {
+    if (k in o && Array.isArray(o[k])) {
+      return o[k] as unknown[];
+    }
   }
-  if (raw && typeof raw === 'object' && 'items' in raw && Array.isArray((raw as { items: unknown }).items)) {
-    return (raw as { items: unknown[] }).items;
+
+  const vals = Object.values(o);
+  if (vals.length === 1 && Array.isArray(vals[0])) {
+    return vals[0] as unknown[];
   }
+
+  if (o.data && typeof o.data === 'object' && !Array.isArray(o.data)) {
+    return normalizeJsonArray(o.data, depth + 1);
+  }
+
   return [];
 }
 
@@ -372,13 +415,21 @@ function pickLabel(o: Record<string, unknown>): string {
   if (typeof o.name === 'string') return o.name;
   if (typeof o.title === 'string') return o.title;
   if (typeof o.label === 'string') return o.label;
+  if (typeof o.code === 'string') return o.code;
   return '';
+}
+
+/** API may send UUIDs as strings or (rarely) numeric ids — normalize for selects. */
+function pickStringId(v: unknown): string | undefined {
+  if (typeof v === 'string' && v.trim()) return v;
+  if (typeof v === 'number' && Number.isFinite(v)) return String(v);
+  return undefined;
 }
 
 function mapLevel(raw: unknown): Level | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as Record<string, unknown>;
-  const id = typeof o.id === 'string' ? o.id : undefined;
+  const id = pickStringId(o.id);
   if (!id) return null;
   const name = pickLabel(o) || id;
   return { id, name };
@@ -387,7 +438,7 @@ function mapLevel(raw: unknown): Level | null {
 function mapSpeciality(raw: unknown): Speciality | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as Record<string, unknown>;
-  const id = typeof o.id === 'string' ? o.id : null;
+  const id = pickStringId(o.id);
   if (!id) return null;
   const name = pickLabel(o) || id;
   const description = typeof o.description === 'string' ? o.description : undefined;
@@ -395,11 +446,19 @@ function mapSpeciality(raw: unknown): Speciality | null {
   let curriculumId: string | undefined;
   if (o.level && typeof o.level === 'object') {
     const l = o.level as Record<string, unknown>;
-    if (typeof l.id === 'string') levelId = l.id;
+    levelId = pickStringId(l.id);
   }
   if (o.curriculum && typeof o.curriculum === 'object') {
     const c = o.curriculum as Record<string, unknown>;
-    if (typeof c.id === 'string') curriculumId = c.id;
+    curriculumId = pickStringId(c.id);
+  }
+  if (!levelId) {
+    levelId =
+      pickStringId(o.levelId) ?? pickStringId((o as { level_id?: unknown }).level_id);
+  }
+  if (!curriculumId) {
+    curriculumId =
+      pickStringId(o.curriculumId) ?? pickStringId((o as { curriculum_id?: unknown }).curriculum_id);
   }
   return { id, name, description, levelId, curriculumId };
 }
@@ -437,10 +496,11 @@ export async function getCurriculums(): Promise<Curriculum[]> {
     .filter((x): x is Curriculum => x !== null);
 }
 
-/** Optional `levelId` query filters specialities for that level (API contract). */
-export async function getSpecialities(levelId?: string): Promise<Speciality[]> {
+/** Optional `levelId` / `curriculumId` query params when the API supports filtering. */
+export async function getSpecialities(levelId?: string, curriculumId?: string): Promise<Speciality[]> {
   const qs = new URLSearchParams();
   if (levelId) qs.set('levelId', levelId);
+  if (curriculumId) qs.set('curriculumId', curriculumId);
   const suffix = qs.toString() ? `?${qs.toString()}` : '';
   const res = await fetch(apiUrl(`/specialities/public${suffix}`), {
     method: 'GET',

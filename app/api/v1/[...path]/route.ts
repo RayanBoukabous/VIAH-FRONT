@@ -18,13 +18,20 @@ const DROP_REQUEST_HEADERS = new Set([
   'content-length',
 ]);
 
-/** Response headers that must not be copied blindly when piping the body. */
+/**
+ * Response headers that must not be copied blindly when piping the body.
+ * Node's fetch decompresses gzip/br bodies but may still expose Content-Encoding /
+ * Content-Length from upstream — forwarding those makes the browser try to decode again
+ * → net::ERR_CONTENT_DECODING_FAILED on public catalog routes (GET /levels/public, etc.).
+ */
 const DROP_RESPONSE_HEADERS = new Set([
   'connection',
   'keep-alive',
   'proxy-connection',
   'transfer-encoding',
   'upgrade',
+  'content-encoding',
+  'content-length',
 ]);
 
 function upstreamUrl(pathSegments: string[], search: string): string {
